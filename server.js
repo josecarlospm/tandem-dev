@@ -141,7 +141,9 @@ function autoDetectCLITools() {
     ...pathDirs,
     path.join(homeDir, 'AppData', 'Local', 'agy', 'bin'),
     path.join(homeDir, '.local', 'bin'),
+    path.join(homeDir, '.cursor', 'bin'),
     path.join(homeDir, '.cargo', 'bin'),
+    path.join(homeDir, 'AppData', 'Local', 'Programs', 'cursor', 'resources', 'app', 'bin'),
     path.join(homeDir, 'AppData', 'Roaming', 'npm'),
     '/usr/local/bin',
     '/usr/bin',
@@ -163,6 +165,15 @@ function autoDetectCLITools() {
       id: 'agent-codex',
       cliEngine: 'Codex CLI',
       executables: isWin ? ['codex.exe', 'codex', 'openai-codex.exe'] : ['codex', 'openai-codex']
+    },
+    {
+      // Official Cursor CLI install places `agent` on PATH (often ~/.local/bin).
+      // See https://cursor.com/docs/cli/headless — headless: `agent -p [--force] "..."`.
+      id: 'agent-cursor',
+      cliEngine: 'Cursor Agent',
+      executables: isWin
+        ? ['agent.exe', 'agent', 'cursor-agent.exe', 'cursor-agent']
+        : ['agent', 'cursor-agent']
     },
     {
       id: 'tool-github',
@@ -298,6 +309,28 @@ const state = {
           ? `[AUTO-DETECTED ON HOST] Found binary at: ${envScanResult.detectedMap['agent-codex'].resolvedPath}`
           : 'CLI binary not auto-detected in PATH.'
       }
+    },
+    {
+      id: 'agent-cursor',
+      name: 'Agent Cursor',
+      cliEngine: 'Cursor Agent',
+      cliCommand: envScanResult.detectedMap['agent-cursor']?.resolvedPath || 'agent',
+      cliArgs: '-p --trust',
+      skipPermissions: true,
+      role: 'Cursor CLI coding agent (headless print mode)',
+      color: '#f97316',
+      status: 'online',
+      avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=CursorAgent',
+      description: 'Cursor Agent CLI (`agent -p`). Requires Cursor CLI on the host running Tandem, plus `agent login` or CURSOR_API_KEY.',
+      version: 'CLI',
+      autoDetected: envScanResult.detectedMap['agent-cursor']?.isInstalled || false,
+      validationStatus: {
+        testedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        success: envScanResult.detectedMap['agent-cursor']?.isInstalled || false,
+        message: envScanResult.detectedMap['agent-cursor']?.isInstalled
+          ? `[AUTO-DETECTED ON HOST] Found binary at: ${envScanResult.detectedMap['agent-cursor'].resolvedPath}`
+          : 'Cursor CLI (`agent`) not auto-detected. Install from https://cursor.com/docs/cli/overview onto the machine that runs `node server.js`, then Rescan.'
+      }
     }
   ],
   channels: {
@@ -319,6 +352,7 @@ const state = {
     { id: 'dm-agent-antigravity', targetId: 'agent-antigravity', isAgent: true, name: 'Agent Antigravity', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Antigravity', color: '#06b6d4' },
     { id: 'dm-agent-claude', targetId: 'agent-claude', isAgent: true, name: 'Agent Claude', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=ClaudeCode', color: '#8b5cf6' },
     { id: 'dm-agent-codex', targetId: 'agent-codex', isAgent: true, name: 'Agent Codex', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=CodexCLI', color: '#10b981' },
+    { id: 'dm-agent-cursor', targetId: 'agent-cursor', isAgent: true, name: 'Agent Cursor', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=CursorAgent', color: '#f97316' },
     { id: 'dm-u1', targetId: 'u1', isAgent: false, name: 'Alex Rivera', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100', color: '#3b82f6' }
   ],
   unreadCounts: {
@@ -697,10 +731,172 @@ function terminateChildProcessSafely(child) {
   }
 }
 
+function getCliBinaryBasename(cliCommand = '') {
+  return path.basename(String(cliCommand).trim()).toLowerCase().replace(/\.exe$/i, '');
+}
+
+function isCursorAgent(agent) {
+  if (!agent) return false;
+  if (agent.id === 'agent-cursor') return true;
+  const engine = String(agent.cliEngine || '').toLowerCase();
+  if (engine.includes('cursor')) return true;
+  const base = getCliBinaryBasename(agent.cliCommand);
+  return base === 'agent' || base === 'cursor-agent';
+}
+
+/** Resolve a CLI binary on PATH / absolute path. Returns null when missing. */
+function resolveCliBinary(cliCommand) {
+  if (!cliCommand || !String(cliCommand).trim()) return null;
+  const cmd = String(cliCommand).trim();
+  if (path.isAbsolute(cmd)) {
+    try {
+      return fs.existsSync(cmd) ? cmd : null;
+    } catch {
+      return null;
+    }
+  }
+  try {
+    const lookup = process.platform === 'win32' ? `where.exe ${cmd}` : `command -v ${cmd}`;
+    const out = execSync(lookup, { encoding: 'utf8', shell: true }).trim();
+    const first = out.split(/\r?\n/).map(s => s.trim()).find(Boolean);
+    if (first) return first;
+  } catch {
+    /* not on PATH */
+  }
+  return null;
+}
+
+/**
+ * Build argv for each supported engine.
+ * Cursor headless: `agent -p [--force] --trust --output-format text "<prompt>"`
+ * https://cursor.com/docs/cli/headless
+ */
+function buildCliSpawnArgs(agent, agenticPromptBundle) {
+  const skipPerms = agent.skipPermissions !== false;
+  const base = getCliBinaryBasename(agent.cliCommand);
+  const id = agent.id || '';
+
+  if (isCursorAgent(agent)) {
+    const args = ['-p', '--trust', '--output-format', 'text'];
+    if (skipPerms) args.push('--force');
+    args.push(agenticPromptBundle);
+    return args;
+  }
+
+  if (id === 'agent-antigravity' || base.includes('agy') || base.includes('antigravity')) {
+    return skipPerms
+      ? ['--dangerously-skip-permissions', '-p', agenticPromptBundle]
+      : ['-p', agenticPromptBundle];
+  }
+
+  if (id === 'agent-claude' || base.includes('claude')) {
+    return skipPerms
+      ? ['--dangerously-skip-permissions', '-p', agenticPromptBundle]
+      : ['-p', agenticPromptBundle];
+  }
+
+  if (id === 'agent-codex' || base.includes('codex')) {
+    return ['exec', agenticPromptBundle];
+  }
+
+  return agent.cliArgs
+    ? [...agent.cliArgs.split(' ').filter(Boolean), agenticPromptBundle]
+    : [agenticPromptBundle];
+}
+
+/** Dry-run style preflight: binary resolve + Cursor auth hint (no model call). */
+function preflightAgentCLI(agent) {
+  const requested = agent.cliCommand || '(unset)';
+  const resolved = resolveCliBinary(agent.cliCommand);
+  const report = {
+    ok: !!resolved,
+    requested,
+    resolvedPath: resolved,
+    engine: agent.cliEngine,
+    isCursor: isCursorAgent(agent),
+    notes: []
+  };
+
+  if (!resolved) {
+    report.notes.push(
+      isCursorAgent(agent)
+        ? 'Install Cursor CLI on the host that runs Tandem (`curl https://cursor.com/install -fsS | bash`), ensure `agent` is on PATH, then Rescan.'
+        : `Executable '${requested}' was not found on PATH for this Node process.`
+    );
+    return report;
+  }
+
+  if (isCursorAgent(agent)) {
+    const hasKey = !!(process.env.CURSOR_API_KEY || '').trim();
+    report.cursorApiKeyPresent = hasKey;
+    report.notes.push(
+      hasKey
+        ? 'CURSOR_API_KEY is set for this process (good for headless automation).'
+        : 'CURSOR_API_KEY is not set. Use `agent login` on this host or set CURSOR_API_KEY before spawning.'
+    );
+    report.notes.push(
+      'Cursor CLI must run on the same machine as `node server.js` (local laptop or a Cloud Agent environment with the CLI baked in). Cloud-only Tandem VMs without `agent` cannot execute Cursor tasks.'
+    );
+  }
+
+  return report;
+}
+
 // --- REAL CLI PROMPT EXECUTION & MULTICA v0.12.1 HARNESS RUNNER ---
 async function runCLIAgent(agentId, rawPrompt, cardId, channelId, options = {}) {
   const agent = state.agents.find(a => a.id === agentId);
   if (!agent) return;
+
+  const preflight = preflightAgentCLI(agent);
+  if (!preflight.ok) {
+    const failure = classifyTaskFailure(`command not found: ${agent.cliCommand}`);
+    const responseText = [
+      `**Binary missing:** \`${agent.cliCommand}\` is not installed (or not on PATH) for this Tandem host.`,
+      '',
+      ...preflight.notes.map(n => `- ${n}`),
+      '',
+      `*Remediation:* ${failure.remediation}`
+    ].join('\n');
+
+    const blockedCard = cardId ? state.cards.find(c => c.id === cardId) : null;
+    if (blockedCard) {
+      blockedCard.columnId = 'col-in-review';
+      blockedCard.results = responseText;
+      blockedCard.lastFailure = failure;
+      blockedCard.activeRun = null;
+      addExecutionLayer(blockedCard, 'stderr', `[${failure.label}] ${agent.cliCommand} not found`);
+      blockedCard.comments.push({
+        id: 'cm-err-' + Date.now(),
+        senderId: agent.id,
+        senderType: 'agent',
+        text: `**Run blocked (${failure.label}):** ${responseText}`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      broadcast('card_updated', blockedCard);
+    }
+
+    if (channelId) {
+      const responseMsg = {
+        id: 'msg-resp-' + Date.now(),
+        senderId: agent.id,
+        senderType: 'agent',
+        content: `**${agent.name}:**\n\n${responseText}`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      if (!state.messages[channelId]) state.messages[channelId] = [];
+      state.messages[channelId].push(responseMsg);
+      state.unreadCounts[channelId] = (state.unreadCounts[channelId] || 0) + 1;
+      broadcast('unread_counts_updated', state.unreadCounts);
+      broadcast('new_message', { channelId, message: responseMsg });
+    }
+
+    agent.status = 'online';
+    broadcast('agent_status_change', { agentId: agent.id, status: 'online', channelId });
+    return;
+  }
+
+  // Prefer resolved absolute path for spawn (avoids fragile shell lookups).
+  agent.cliCommand = preflight.resolvedPath;
 
   const card = cardId ? state.cards.find(c => c.id === cardId) : null;
   const runKey = card ? card.id : `chat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -836,22 +1032,7 @@ async function runCLIAgent(agentId, rawPrompt, cardId, channelId, options = {}) 
     broadcast('card_updated', card);
   }
 
-  let spawnArgs = [];
-  const skipPerms = agent.skipPermissions !== false;
-
-  if (agent.cliCommand.includes('agy')) {
-    spawnArgs = skipPerms 
-      ? ['--dangerously-skip-permissions', '-p', agenticPromptBundle] 
-      : ['-p', agenticPromptBundle];
-  } else if (agent.cliCommand.includes('claude')) {
-    spawnArgs = skipPerms 
-      ? ['--dangerously-skip-permissions', '-p', agenticPromptBundle] 
-      : ['-p', agenticPromptBundle];
-  } else if (agent.cliCommand.includes('codex')) {
-    spawnArgs = ['exec', agenticPromptBundle];
-  } else {
-    spawnArgs = agent.cliArgs ? [...agent.cliArgs.split(' ').filter(Boolean), agenticPromptBundle] : [agenticPromptBundle];
-  }
+  const spawnArgs = buildCliSpawnArgs(agent, agenticPromptBundle);
 
   let fullStdout = '';
   let fullStderr = '';
@@ -859,7 +1040,8 @@ async function runCLIAgent(agentId, rawPrompt, cardId, channelId, options = {}) 
   const useShell = !path.isAbsolute(binPath);
   const child = spawn(binPath, spawnArgs, {
     shell: useShell,
-    cwd: worktreeInfo.cwd || process.cwd()
+    cwd: worktreeInfo.cwd || process.cwd(),
+    env: { ...process.env }
   });
   runRecord.child = child;
   recordCardPhase(card, runRecord, 'runtime_started', `Spawned '${path.basename(binPath)}' (PID ${child.pid || 'n/a'})`);
@@ -1118,27 +1300,61 @@ function validateAgentCLI(agentId) {
   agent.status = 'busy';
   broadcast('agent_status_change', { agentId: agent.id, status: 'busy' });
 
-  const binPath = agent.cliCommand;
+  const preflight = preflightAgentCLI(agent);
+  const binPath = preflight.resolvedPath || agent.cliCommand;
   const startTime = Date.now();
+  const stamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  exec(`"${binPath}" --version`, { cwd: process.cwd() }, (error, stdout, stderr) => {
+  if (!preflight.ok) {
+    agent.status = 'online';
+    agent.autoDetected = false;
+    agent.validationStatus = {
+      testedAt: stamp(),
+      success: false,
+      message: [
+        `[PREFLIGHT FAILED] '${preflight.requested}' not found on this host.`,
+        ...preflight.notes,
+        `Resolved: ${preflight.resolvedPath || 'n/a'}`
+      ].join('\n')
+    };
+    broadcast('agent_updated', agent);
+    broadcast('agent_status_change', { agentId: agent.id, status: 'online' });
+    return;
+  }
+
+  // Prefer --version; Cursor CLI may also answer via -h if --version is unsupported.
+  const versionCmd = isCursorAgent(agent)
+    ? `"${binPath}" --version 2>/dev/null || "${binPath}" -h 2>&1 | head -n 8`
+    : `"${binPath}" --version`;
+
+  exec(versionCmd, { cwd: process.cwd(), shell: true }, (error, stdout, stderr) => {
     const latency = Date.now() - startTime;
     agent.status = 'online';
 
-    if (error) {
+    if (error && !stdout.trim() && !stderr.trim()) {
       agent.validationStatus = {
-        testedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        testedAt: stamp(),
         success: false,
-        message: `[ERROR] '${binPath}' failed: ${error.message.trim()}`
+        message: [
+          `[ERROR] '${binPath}' failed: ${error.message.trim()}`,
+          ...preflight.notes
+        ].join('\n')
       };
     } else {
-      const versionStr = stdout.trim() || stderr.trim() || 'OK (No output)';
-      agent.version = versionStr;
+      const versionStr = (stdout.trim() || stderr.trim() || 'OK (No output)').slice(0, 400);
+      agent.version = versionStr.split('\n')[0].slice(0, 80);
       agent.autoDetected = true;
+      agent.cliCommand = binPath;
       agent.validationStatus = {
-        testedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        testedAt: stamp(),
         success: true,
-        message: `[VALIDATION OK]\nExecutable: ${binPath}\nVersion: ${versionStr}\nLatency: ${latency}ms\nExit Code: 0`
+        message: [
+          `[VALIDATION OK]`,
+          `Executable: ${binPath}`,
+          `Version/Help: ${versionStr}`,
+          `Latency: ${latency}ms`,
+          ...preflight.notes
+        ].join('\n')
       };
     }
 

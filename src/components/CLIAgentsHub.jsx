@@ -468,6 +468,7 @@ export default function CLIAgentsHub({
                                 <option value="Antigravity CLI">Antigravity CLI (agy)</option>
                                 <option value="Claude Code">Claude Code (claude)</option>
                                 <option value="Codex CLI">Codex CLI (codex)</option>
+                                <option value="Cursor Agent">Cursor Agent (agent -p)</option>
                                 <option value="Custom CLI">Custom Binary</option>
                               </select>
                             </div>

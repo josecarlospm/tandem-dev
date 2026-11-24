@@ -196,12 +196,18 @@ export function classifyTaskFailure(rawError = '', { timedOut = false, idleTimed
     };
   }
 
-  if (lower.includes('enoent') || lower.includes('not recognized') || lower.includes('command not found')) {
+  if (
+    lower.includes('enoent') ||
+    lower.includes('not recognized') ||
+    lower.includes('command not found') ||
+    lower.includes(': not found') ||
+    lower.includes('not installed')
+  ) {
     return {
       code: 'binary_not_found',
       label: 'Binary Missing',
       retryable: false,
-      remediation: 'Executable path could not be spawned. Rescan environment or update binary path in Integrations Hub.'
+      remediation: 'Install the CLI on the host that runs Tandem (or update the binary path in Agents Hub), then Rescan System Tools and Validate CLI.'
     };
   }
 
@@ -266,7 +272,14 @@ export function buildMulticaHarnessPrompt({
   users = [],
   agents = []
 }) {
-  const providerKey = (agent?.cliCommand || '').toLowerCase().includes('agy') ? 'antigravity' : 'standard';
+  const cmdLower = (agent?.cliCommand || '').toLowerCase();
+  const engineLower = (agent?.cliEngine || '').toLowerCase();
+  const binBase = cmdLower.split(/[\\/]/).pop() || '';
+  let providerKey = 'standard';
+  if (cmdLower.includes('agy') || engineLower.includes('antigravity')) providerKey = 'antigravity';
+  else if (agent?.id === 'agent-cursor' || engineLower.includes('cursor') || binBase === 'agent' || binBase.includes('cursor-agent')) {
+    providerKey = 'cursor';
+  }
 
   // Part A: Stable Cache-Friendly Runtime Brief Prefix
   const briefLines = [
@@ -293,6 +306,10 @@ export function buildMulticaHarnessPrompt({
   if (providerKey === 'antigravity') {
     briefLines.push(
       'This task is marked terminal when the `agy -p` process exits. Collect all required verification results inside foreground blocking calls before ending your turn; never end a turn "standing by" for detached processes.'
+    );
+  } else if (providerKey === 'cursor') {
+    briefLines.push(
+      'This task is marked terminal when the Cursor CLI `agent -p` process exits. Complete all required file edits and verification inside this print-mode run; do not wait on interactive UI approval or detached watchers.'
     );
   } else {
     briefLines.push(
