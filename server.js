@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
@@ -44,42 +44,71 @@ function generateSessionToken() {
 // In-memory session store: token -> { userId, createdAt }
 const activeSessions = new Map();
 
-// --- LOCAL DB PERSISTENCE FOR USERS ---
+// --- LIGHTWEIGHT .env LOADER & LOCAL DB PERSISTENCE FOR USERS ---
+const ENV_FILE = path.join(process.cwd(), '.env');
+if (fs.existsSync(ENV_FILE)) {
+  try {
+    fs.readFileSync(ENV_FILE, 'utf-8').split(/\r?\n/).forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) return;
+      const eqIdx = trimmed.indexOf('=');
+      if (eqIdx === -1) return;
+      const key = trimmed.slice(0, eqIdx).trim();
+      const val = trimmed.slice(eqIdx + 1).trim().replace(/^['"]|['"]$/g, '');
+      if (key && process.env[key] === undefined) {
+        process.env[key] = val;
+      }
+    });
+  } catch (e) { /* ignore malformed .env */ }
+}
+
 const DB_FILE = path.join(process.cwd(), 'users.json');
+let bootstrapBanner = null;
 
-const DEFAULT_PASSWORD = 'vibe2026';
+function createInitialUsers() {
+  const ownerEmail = process.env.TANDEM_OWNER_EMAIL || 'dev@tandem.local';
+  const configuredPassword = (process.env.TANDEM_INITIAL_PASSWORD || '').trim();
+  const initialPassword = configuredPassword || crypto.randomBytes(12).toString('base64url');
+  const passwordHash = hashPassword(initialPassword);
 
-const defaultUsers = [
-  { id: 'u0', name: 'You (Dev)', email: 'dev@vibecoding.io', password: hashPassword(DEFAULT_PASSWORD), role: 'Owner', title: 'Tech Lead & Workspace Owner', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100', color: '#6366f1', status: 'online' },
-  { id: 'u1', name: 'Alex Rivera', email: 'alex@vibecoding.io', password: hashPassword(DEFAULT_PASSWORD), role: 'Admin', title: 'Fullstack Lead', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100', color: '#3b82f6', status: 'online' },
-  { id: 'u2', name: 'Sarah Chen', email: 'sarah@vibecoding.io', password: hashPassword(DEFAULT_PASSWORD), role: 'User', title: 'UX Architect', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100', color: '#ec4899', status: 'online' },
-  { id: 'u3', name: 'Marcus Vance', email: 'marcus@vibecoding.io', password: hashPassword(DEFAULT_PASSWORD), role: 'User', title: 'DevOps / Cloud', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100', color: '#10b981', status: 'idle' }
-];
+  if (!configuredPassword) {
+    bootstrapBanner = `[AUTH BOOTSTRAP] First-time setup created owner '${ownerEmail}' with one-time password: ${initialPassword}`;
+  } else {
+    bootstrapBanner = `[AUTH BOOTSTRAP] First-time setup created owner '${ownerEmail}' using TANDEM_INITIAL_PASSWORD from environment.`;
+  }
+
+  return [
+    { id: 'u0', name: 'Workspace Owner', email: ownerEmail, password: passwordHash, role: 'Owner', title: 'Tech Lead & Workspace Owner', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100', color: '#6366f1', status: 'online' },
+    { id: 'u1', name: 'Alex Rivera', email: 'alex@tandem.local', password: passwordHash, role: 'Admin', title: 'Fullstack Lead', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100', color: '#3b82f6', status: 'online' },
+    { id: 'u2', name: 'Sarah Chen', email: 'sarah@tandem.local', password: passwordHash, role: 'User', title: 'UX Architect', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100', color: '#ec4899', status: 'online' },
+    { id: 'u3', name: 'Marcus Vance', email: 'marcus@tandem.local', password: passwordHash, role: 'User', title: 'DevOps / Cloud', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100', color: '#10b981', status: 'idle' }
+  ];
+}
 
 function loadUsersFromDB() {
   try {
     if (fs.existsSync(DB_FILE)) {
       const raw = fs.readFileSync(DB_FILE, 'utf-8');
       const users = JSON.parse(raw);
-      // Migrate: if existing users don't have passwords, add default one
       let migrated = false;
       users.forEach(u => {
         if (!u.password) {
-          u.password = hashPassword(DEFAULT_PASSWORD);
+          const generated = crypto.randomBytes(12).toString('base64url');
+          u.password = hashPassword(generated);
           migrated = true;
         }
       });
       if (migrated) {
         fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2));
-        console.log('[DB] Migrated existing users — added default password hashes');
       }
       return users;
     }
   } catch (err) {
     console.error('[DB] Load error:', err.message);
   }
-  fs.writeFileSync(DB_FILE, JSON.stringify(defaultUsers, null, 2));
-  return [...defaultUsers];
+  const seeded = createInitialUsers();
+  fs.writeFileSync(DB_FILE, JSON.stringify(seeded, null, 2));
+  return seeded;
 }
 
 function saveUsersToDB(users) {
@@ -419,7 +448,7 @@ description: Deterministic unit and integration testing rules
       instanceUrl: 'https://github.com',
       repoPath: 'josecarlospm/tandem-dev',
       defaultBranch: 'main',
-      accessToken: 'ghp_••••••••••••••••',
+      accessToken: 'ghp_â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
       autoCreatePR: true,
       cliDetected: envScanResult.detectedMap['tool-github']?.isInstalled || false,
       cliPath: envScanResult.detectedMap['tool-github']?.resolvedPath || 'git',
@@ -434,7 +463,7 @@ description: Deterministic unit and integration testing rules
       projectName: 'tandem-dev',
       productionDomain: 'tandem-dev.vercel.app',
       framework: 'vite',
-      accessToken: 'vcel_••••••••••••••••',
+      accessToken: 'vcel_â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
       autoDeployPreview: true,
       cliDetected: envScanResult.detectedMap['tool-vercel']?.isInstalled || false,
       cliPath: envScanResult.detectedMap['tool-vercel']?.resolvedPath || 'vercel',
@@ -564,7 +593,7 @@ function postTaskCompletionAnnouncement(card, agent, responseText) {
     id: 'msg-announcement-' + Date.now(),
     senderId: agent.id,
     senderType: 'agent',
-    content: `🎉 **Task Completed:** **[${card.title}]**\n\n**Assigned Bot:** @${agent.name} (\`${agent.cliEngine}\`)\n\n**Result Summary:**\n${responseText}`,
+    content: `ðŸŽ‰ **Task Completed:** **[${card.title}]**\n\n**Assigned Bot:** @${agent.name} (\`${agent.cliEngine}\`)\n\n**Result Summary:**\n${responseText}`,
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     cardId: card.id
   };
@@ -832,7 +861,7 @@ async function runCLIAgent(agentId, rawPrompt, cardId, channelId, options = {}) 
         id: 'cm-auto-' + Date.now(),
         senderId: agent.id,
         senderType: 'agent',
-        text: `**Harness Run \`${runId}\` Started** · Engine: \`${agent.cliEngine}\` · Boundary: \`${worktreeInfo.mode}\` · Skills: **${boundSkills.length}**`,
+        text: `**Harness Run \`${runId}\` Started** Â· Engine: \`${agent.cliEngine}\` Â· Boundary: \`${worktreeInfo.mode}\` Â· Skills: **${boundSkills.length}**`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
     }
@@ -993,7 +1022,7 @@ async function runCLIAgent(agentId, rawPrompt, cardId, channelId, options = {}) 
         id: 'cm-err-' + Date.now(),
         senderId: agent.id,
         senderType: 'agent',
-        text: `**Run \`${runId}\` Failed (${failure.label}):** Could not spawn \`${binPath}\` — ${err.message}\n*Remediation:* ${failure.remediation}`,
+        text: `**Run \`${runId}\` Failed (${failure.label}):** Could not spawn \`${binPath}\` â€” ${err.message}\n*Remediation:* ${failure.remediation}`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
       broadcast('card_updated', card);
@@ -1184,11 +1213,12 @@ wss.on('connection', (ws) => {
           return;
         }
 
+        const tempPassword = (payload.password || '').trim() || crypto.randomBytes(10).toString('base64url');
         const newUser = {
           id: 'u-' + Date.now(),
           name: name || 'New Teammate',
-          email: email || 'user@vibecoding.io',
-          password: hashPassword(payload.password || DEFAULT_PASSWORD),
+          email: email || 'user@tandem.local',
+          password: hashPassword(tempPassword),
           role: role || 'User', // 'Owner' | 'Admin' | 'User'
           title: title || 'Team Member',
           avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
@@ -1275,7 +1305,7 @@ wss.on('connection', (ws) => {
             });
           }
         } else {
-          // General chat thread — do NOT auto-create task cards or auto-trigger bots.
+          // General chat thread â€” do NOT auto-create task cards or auto-trigger bots.
           // Only trigger if explicitly @mentioned
           state.agents.forEach(agent => {
             if (content.toLowerCase().includes(`@${agent.name.toLowerCase()}`)) {
@@ -1424,7 +1454,7 @@ wss.on('connection', (ws) => {
             id: 'msg-sys-' + Date.now(),
             senderId: 'system',
             senderType: 'system',
-            content: `🤖 **Member Joined:** **${memberName}** was added to **#${channel.name}** by **${requesterName}**.`,
+            content: `ðŸ¤– **Member Joined:** **${memberName}** was added to **#${channel.name}** by **${requesterName}**.`,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           };
 
@@ -1520,7 +1550,7 @@ wss.on('connection', (ws) => {
           id: 'msg-sys-conv-' + Date.now(),
           senderId: 'system',
           senderType: 'system',
-          content: `📌 **Task Created:** Converted message/thread into Trello card **[${newCard.title}]** assigned to **@${agent ? agent.name : 'Bot'}**!`,
+          content: `ðŸ“Œ **Task Created:** Converted message/thread into Trello card **[${newCard.title}]** assigned to **@${agent ? agent.name : 'Bot'}**!`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           cardId: newCard.id
         };
@@ -1883,7 +1913,7 @@ wss.on('connection', (ws) => {
             const ver = !err && stdout ? stdout.trim().split('\n')[0] : 'GitHub REST API v3';
             gh.connected = true;
             gh.lastSyncedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            gh.statusMessage = `[VERIFIED] ${ver} · Repo: ${gh.repoPath} (${gh.defaultBranch}) · ${latency}ms`;
+            gh.statusMessage = `[VERIFIED] ${ver} Â· Repo: ${gh.repoPath} (${gh.defaultBranch}) Â· ${latency}ms`;
             broadcast('integrations_updated', { integrations: state.integrations, deployments: state.deployments });
           });
         } else if (provider === 'vercel') {
@@ -1895,7 +1925,7 @@ wss.on('connection', (ws) => {
             const ver = !err && stdout ? `Vercel CLI ${stdout.trim().split('\n').pop()}` : 'Vercel Edge REST API';
             vc.connected = true;
             vc.lastSyncedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            vc.statusMessage = `[VERIFIED] ${ver} · Project: ${vc.projectName} (${vc.productionDomain}) · ${latency}ms`;
+            vc.statusMessage = `[VERIFIED] ${ver} Â· Project: ${vc.projectName} (${vc.productionDomain}) Â· ${latency}ms`;
             broadcast('integrations_updated', { integrations: state.integrations, deployments: state.deployments });
           });
         }
@@ -1947,7 +1977,7 @@ wss.on('connection', (ws) => {
             id: 'cm-gh-' + Date.now(),
             senderId: requester.id,
             senderType: 'user',
-            text: `**GitHub Pull Request Ready:** Opened **PR ${number}** (\`${branch}\` → \`${gh.defaultBranch}\`, commit \`${commitSha}\`).\nGitHub Actions: **Checks Passed** · [View Pull Request](${prUrl})`,
+            text: `**GitHub Pull Request Ready:** Opened **PR ${number}** (\`${branch}\` â†’ \`${gh.defaultBranch}\`, commit \`${commitSha}\`).\nGitHub Actions: **Checks Passed** Â· [View Pull Request](${prUrl})`,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           });
 
@@ -1959,7 +1989,7 @@ wss.on('connection', (ws) => {
               id: 'msg-gh-' + Date.now(),
               senderId: requester.id,
               senderType: 'user',
-              content: `**GitHub PR ${number} Opened** for **[${card.title}]** on branch \`${branch}\` (\`${commitSha}\`) → \`${gh.defaultBranch}\`.\nGitHub Actions: **Checks Passed** · ${prUrl}`,
+              content: `**GitHub PR ${number} Opened** for **[${card.title}]** on branch \`${branch}\` (\`${commitSha}\`) â†’ \`${gh.defaultBranch}\`.\nGitHub Actions: **Checks Passed** Â· ${prUrl}`,
               timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
               cardId: card.id
             };
@@ -2054,7 +2084,7 @@ wss.on('connection', (ws) => {
               id: 'msg-vc-' + Date.now(),
               senderId: requester.id,
               senderType: 'user',
-              content: `**Vercel ${environment} Deployed** (${duration}) for **[${card ? card.title : vc.projectName}]** · Live at ${deployUrl}`,
+              content: `**Vercel ${environment} Deployed** (${duration}) for **[${card ? card.title : vc.projectName}]** Â· Live at ${deployUrl}`,
               timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
               cardId: card ? card.id : null
             };
@@ -2168,7 +2198,7 @@ app.post('/api/auth/login', (req, res) => {
   user.status = 'online';
   broadcast('users_updated', state.users.map(sanitizeUser));
 
-  console.log(`[AUTH] Login successful: ${user.name} (${user.role}) — session ${token.slice(0, 8)}...`);
+  console.log(`[AUTH] Login successful: ${user.name} (${user.role}) â€” session ${token.slice(0, 8)}...`);
 
   res.json({
     token,
@@ -2227,8 +2257,11 @@ app.post('/api/auth/change-password', (req, res) => {
   res.json({ success: true });
 });
 
-const PORT = 3001;
+const PORT = Number(process.env.PORT) || 3001;
 server.listen(PORT, () => {
-  console.log(`[Backend Server] Auth & RBAC engine running on http://localhost:${PORT}`);
-  console.log(`[AUTH] Default login: dev@vibecoding.io / vibe2026`);
+  console.log(`[Tandem Server] Auth, RBAC & Harness engine running on http://localhost:${PORT}`);
+  if (bootstrapBanner) {
+    console.log(bootstrapBanner);
+  }
 });
+

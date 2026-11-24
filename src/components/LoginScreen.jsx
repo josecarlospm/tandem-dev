@@ -109,37 +109,13 @@ export default function LoginScreen({ onLogin, errorMessage }) {
             className="login-hint-toggle"
             onClick={() => setShowHint(!showHint)}
           >
-            {showHint ? 'Hide demo accounts' : 'View demo accounts'}
+            {showHint ? 'Hide bootstrap help' : 'First-time setup & RBAC info'}
           </button>
 
           {showHint && (
             <div className="login-hint-box">
-              <div className="login-hint-row">
-                <span className="login-hint-role owner" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <Crown size={11} /> Owner
-                </span>
-                <code style={{ cursor: 'pointer' }} onClick={() => { setEmail('dev@vibecoding.io'); setPassword('vibe2026'); }}>dev@vibecoding.io</code>
-              </div>
-              <div className="login-hint-row">
-                <span className="login-hint-role admin" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <Shield size={11} /> Admin
-                </span>
-                <code style={{ cursor: 'pointer' }} onClick={() => { setEmail('alex@vibecoding.io'); setPassword('vibe2026'); }}>alex@vibecoding.io</code>
-              </div>
-              <div className="login-hint-row">
-                <span className="login-hint-role user" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <User size={11} /> User
-                </span>
-                <code style={{ cursor: 'pointer' }} onClick={() => { setEmail('sarah@vibecoding.io'); setPassword('vibe2026'); }}>sarah@vibecoding.io</code>
-              </div>
-              <div className="login-hint-row">
-                <span className="login-hint-role user" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <User size={11} /> User
-                </span>
-                <code style={{ cursor: 'pointer' }} onClick={() => { setEmail('marcus@vibecoding.io'); setPassword('vibe2026'); }}>marcus@vibecoding.io</code>
-              </div>
-              <div className="login-hint-password">
-                Password: <code>vibe2026</code> (click email to autofill)
+              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                On initial launch, Tandem reads <code>TANDEM_OWNER_EMAIL</code> and <code>TANDEM_INITIAL_PASSWORD</code> from <code>.env</code>, or prints a one-time generated bootstrap password to your local server console.
               </div>
             </div>
           )}

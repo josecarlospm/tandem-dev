@@ -4,6 +4,7 @@ import { Users, X, Shield, Crown, User, Trash2, Plus, Lock } from 'lucide-react'
 export default function UserManagementModal({ currentUser, users = [], onClose, onCreateUser, onDeleteUser }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [role, setRole] = useState('User');
   const [title, setTitle] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -14,15 +15,17 @@ export default function UserManagementModal({ currentUser, users = [], onClose, 
 
   const handleCreate = (e) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !password.trim()) return;
     onCreateUser({
       name,
-      email: email || `${name.toLowerCase().replace(/\s+/g, '')}@vibecoding.io`,
+      email: email || `${name.toLowerCase().replace(/\s+/g, '')}@tandem.local`,
+      password: password.trim(),
       role,
       title: title || 'Team Member'
     });
     setName('');
     setEmail('');
+    setPassword('');
     setTitle('');
     setRole('User');
     setShowAddForm(false);
@@ -61,7 +64,7 @@ export default function UserManagementModal({ currentUser, users = [], onClose, 
     <div className="task-drawer-overlay" onClick={onClose}>
       <div 
         onClick={(e) => e.stopPropagation()}
-        style={{ background: 'var(--bg-main)', border: '1px solid var(--border-color)', borderRadius: '12px', width: '540px', maxWidth: '92vw', padding: '24px', boxShadow: 'var(--shadow-lg)' }}
+        style={{ background: 'var(--bg-main)', border: '1px solid var(--border-color)', borderRadius: '12px', width: '560px', maxWidth: '92vw', padding: '24px', boxShadow: 'var(--shadow-lg)' }}
       >
         {/* Modal Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px', paddingBottom: '14px', borderBottom: '1px solid var(--border-color)' }}>
@@ -168,16 +171,29 @@ export default function UserManagementModal({ currentUser, users = [], onClose, 
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                   <div>
                     <label style={{ fontSize: '11px', color: 'var(--text-normal)', display: 'block', marginBottom: '4px' }}>Email</label>
                     <input 
                       type="email" 
                       className="chat-input" 
                       style={{ height: '32px', fontSize: '12px' }}
-                      placeholder="elena@vibecoding.io" 
+                      placeholder="elena@tandem.local" 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '11px', color: 'var(--text-normal)', display: 'block', marginBottom: '4px' }}>Initial Password</label>
+                    <input 
+                      type="password" 
+                      className="chat-input" 
+                      style={{ height: '32px', fontSize: '12px' }}
+                      placeholder="Set password" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
                     />
                   </div>
 

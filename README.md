@@ -54,6 +54,7 @@ flowchart LR
 ```bash
 git clone https://github.com/josecarlospm/tandem-dev.git
 cd tandem-dev
+cp .env.example .env
 npm install
 npm run dev
 ```
@@ -61,14 +62,10 @@ npm run dev
 - **Frontend UI**: `http://localhost:5173`
 - **Backend API & WebSocket**: `http://localhost:3001`
 
-### Default Demo Accounts (Local RBAC)
-On first launch, `server.js` generates a local `scrypt`-hashed `users.json` store with demo roles:
-
-| Role | Email | Password | Capabilities |
-| :--- | :--- | :--- | :--- |
-| **Owner** | `dev@vibecoding.io` | `vibe2026` | Full workspace, RBAC, CLI binary, Harness, `SKILL.md`, and cloud shipping control |
-| **Admin** | `alex@vibecoding.io` | `vibe2026` | Manage users, channels, Harness policies, `SKILL.md`, and integrations |
-| **User** | `sarah@vibecoding.io` | `vibe2026` | Collaborate in channels, manage board cards, run agents, and create private Quick Actions |
+### First-Run Authentication & RBAC
+Tandem enforces Role-Based Access Control (**Owner**, **Admin**, **User**) backed by `scrypt` password hashing (`users.json`, excluded from Git):
+- Set `TANDEM_OWNER_EMAIL` and `TANDEM_INITIAL_PASSWORD` in `.env` prior to first launch, **or** leave `TANDEM_INITIAL_PASSWORD` empty to have Tandem generate a cryptographically random bootstrap password and print it once to your local server terminal on initial setup.
+- Additional team members and roles can be provisioned after sign-in from **Manage Team & Permissions** or updated via `/api/auth/change-password`.
 
 ---
 
@@ -78,6 +75,7 @@ On first launch, `server.js` generates a local `scrypt`-hashed `users.json` stor
 tandem-dev/
 ├── harness.js                         # 9-phase recorder, slot coordinator, token redactor, failure classifier & brief builder
 ├── server.js                          # Express REST auth + WebSocket real-time state, RBAC, CLI runner & GitHub/Vercel handlers
+├── .env.example                       # Environment configuration template
 ├── index.html                         # App entry HTML (Inter + JetBrains Mono)
 ├── src/
 │   ├── App.jsx                        # Workspace shell, session restore & WebSocket client state
