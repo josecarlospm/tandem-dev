@@ -1,18 +1,23 @@
 import React, { useState } from 'react';
 import { Layers, LogIn, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
+const DEMO_EMAIL = 'dev@tandem.local';
+const DEMO_PASSWORD = 'tandem-dev';
+
 export default function LoginScreen({ onLogin, errorMessage }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(DEMO_EMAIL);
+  const [password, setPassword] = useState(DEMO_PASSWORD);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showHint, setShowHint] = useState(false);
+  const [showHint, setShowHint] = useState(true);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) return;
+    const nextEmail = email.trim();
+    const nextPassword = password.trim();
+    if (!nextEmail || !nextPassword) return;
     setLoading(true);
-    await onLogin(email, password);
+    await onLogin(nextEmail, nextPassword);
     setLoading(false);
   };
 
@@ -45,7 +50,7 @@ export default function LoginScreen({ onLogin, errorMessage }) {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoFocus
-              autoComplete="email"
+              autoComplete="username"
             />
           </div>
 
@@ -87,15 +92,27 @@ export default function LoginScreen({ onLogin, errorMessage }) {
           <button
             type="button"
             className="login-hint-toggle"
-            onClick={() => setShowHint(!showHint)}
+            onClick={() => {
+              setEmail(DEMO_EMAIL);
+              setPassword(DEMO_PASSWORD);
+              setShowHint(true);
+            }}
           >
-            {showHint ? 'Hide setup help' : 'First-time setup help'}
+            Fill local demo account
           </button>
 
           {showHint && (
             <div className="login-hint-box">
-              <p className="text-[11.5px] leading-relaxed text-ink-muted">
-                On first launch, Tandem reads <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">TANDEM_OWNER_EMAIL</code> and <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">TANDEM_INITIAL_PASSWORD</code> from <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">.env</code>, or prints a one-time bootstrap password to the server console.
+              <div className="login-hint-row">
+                <span className="text-ink-muted">Owner email</span>
+                <code>{DEMO_EMAIL}</code>
+              </div>
+              <div className="login-hint-row">
+                <span className="text-ink-muted">Local password</span>
+                <code>{DEMO_PASSWORD}</code>
+              </div>
+              <p className="login-hint-password">
+                Fields above are prefilled. Click Sign in, or use the same values from <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">.env</code> (<code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">TANDEM_INITIAL_PASSWORD</code>).
               </p>
             </div>
           )}

@@ -8,7 +8,8 @@ import CLIAgentsHub from './components/CLIAgentsHub';
 import UserManagementModal from './components/UserManagementModal';
 import { Sparkles, Terminal, Layers, Plus, Folder, AlertTriangle, LogOut } from 'lucide-react';
 
-const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+// Always use same-origin /api + /ws so Vite's proxy works for localhost and port-forwarded previews.
+const API_BASE = '';
 
 export default function App() {
   // --- AUTH STATE ---
@@ -112,8 +113,7 @@ export default function App() {
     if (!authToken || !currentUser) return;
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.hostname === 'localhost' ? 'localhost:3001' : window.location.host;
-    const wsUrl = `${protocol}//${host}/ws`;
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
 
     console.log('[App] Connecting WebSocket to:', wsUrl);
     const socket = new WebSocket(wsUrl);
