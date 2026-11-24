@@ -9,7 +9,7 @@ Tandem is a self-hosted collaborative engineering workspace uniting real-time te
 ## Core Capabilities
 
 ### 1. Local CLI Agent Execution Harness (`harness.js`)
-Inspired by modern agent control-plane harnesses (`multica-ai/multica` v0.12.x), Tandem orchestrates local coding CLIs (**Antigravity CLI (`agy`)**, **Claude Code (`claude`)**, **Codex CLI (`codex`)**, or custom binaries) directly on your machine:
+Inspired by modern agent control-plane harnesses (`multica-ai/multica` v0.12.x), Tandem orchestrates local coding CLIs (**Antigravity CLI (`agy`)**, **Claude Code (`claude`)**, **Codex CLI (`codex`)**, **Cursor Agent CLI (`agent -p`)**, or custom binaries) directly on your machine:
 - **Cache-Friendly Two-Part Briefs**: Static runtime identity + `SKILL.md` prefix followed by dynamic per-turn context (`[On Behalf Of]`, `[Project Workflow]` status map, `[Execution Boundary]`, `[Connected Apps]`, and tail-10 thread context).
 - **Live Mid-Run Steering (`--steer`)**: Commenting on or steering an active card run injects `[ADDITIONAL GUIDANCE]` / `[ADDITIONAL INPUT]` supplements into the active turn (or coalesces queued wakeups) instead of spawning duplicate overlapping processes.
 - **9-Stage Monotonic Phase Telemetry**: Tracks `claimed` → `prepare_started` → `skills_ready` → `environment_ready` → `runtime_started` → `first_output_received` → `first_tool_use` → `turn_completed` → `finished` with millisecond timings.
@@ -36,7 +36,7 @@ Inspired by modern agent control-plane harnesses (`multica-ai/multica` v0.12.x),
 flowchart LR
   UI["React + Vite Workspace UI\n(Chat · Board · Harness Hub)"] <-->|WebSocket + REST| Server["Express + WS Control Plane\n(server.js)"]
   Server --> Harness["Execution Harness\n(harness.js)"]
-  Harness -->|Slot Lease + Watchdog| Agents["Local Coding CLIs\n(agy · claude · codex)"]
+  Harness -->|Slot Lease + Watchdog| Agents["Local Coding CLIs\n(agy · claude · codex · agent)"]
   Harness -->|SKILL.md + Worktrees| Repo["Local Git Repo /\n.multica-worktrees"]
   Server --> Ship["Cloud Shipping\n(GitHub PRs + Vercel Edge)"]
 ```
@@ -47,7 +47,7 @@ flowchart LR
 
 ### Prerequisites
 - **Node.js** 18+
-- *(Optional)* Local AI CLI engines installed on `PATH`: `agy` (Antigravity), `claude` (Claude Code), or `codex`, plus `gh` / `git` and `vercel`.
+- *(Optional)* Local AI CLI engines installed on `PATH`: `agy` (Antigravity), `claude` (Claude Code), `codex`, or Cursor CLI (`agent` from https://cursor.com/docs/cli/overview — plus `agent login` or `CURSOR_API_KEY`), plus `gh` / `git` and `vercel`. The CLI must be installed on the same host that runs `node server.js`.
 
 ### Installation & Run
 
