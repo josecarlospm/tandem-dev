@@ -252,7 +252,7 @@
   }
 
   .view-header {
-    @apply flex h-[50px] flex-shrink-0 items-center justify-between border-b border-line bg-white/90 px-5 backdrop-blur-md;
+    @apply flex min-h-[50px] flex-shrink-0 items-center justify-between gap-3 border-b border-line bg-white/90 px-5 py-2 backdrop-blur-md;
   }
 
   .header-title {
