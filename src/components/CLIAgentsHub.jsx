@@ -171,18 +171,39 @@ export default function CLIAgentsHub({
     { id: 'shipping', label: 'GitHub & Vercel', icon: Rocket }
   ];
 
+  const hostLabel = systemEnv?.platformName || 'Local Environment';
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      {/* View Header */}
-      <div className="view-header">
-        <div className="header-title flex-wrap gap-3.5">
-          <div className="flex items-center gap-2">
-            <Cpu size={16} className="text-ink-muted" />
-            <span>Multica Harness & Integrations</span>
+      {/* Two-row header: title/status, then sub-tabs (avoids 50px crush/overlap) */}
+      <div className="flex flex-shrink-0 flex-col border-b border-line bg-white/90 backdrop-blur-md">
+        <div className="flex min-h-[50px] items-center justify-between gap-3 px-5 py-2.5">
+          <div className="header-title min-w-0">
+            <Cpu size={16} className="shrink-0 text-ink-muted" />
+            <span className="truncate">Multica Harness & Integrations</span>
           </div>
 
-          {/* Segmented Sub-Navigation */}
-          <div className="flex gap-0.5 rounded-[7px] border border-line bg-canvas p-0.5">
+          <div className="header-actions shrink-0">
+            <span className="inline-flex h-7 items-center gap-1 whitespace-nowrap rounded-md border border-line bg-surface-sunken px-2.5 font-mono text-[11px] text-ink">
+              Slots:{' '}
+              <strong className="font-semibold text-ink-heading">
+                {harnessConfig.activeSlots || 0}/{harnessConfig.maxConcurrentTasks || 2}
+              </strong>
+              {(harnessConfig.queuedTasks || 0) > 0 && (
+                <span className="text-warning">(+{harnessConfig.queuedTasks} queued)</span>
+              )}
+            </span>
+            <span
+              className="inline-flex h-7 max-w-[240px] items-center gap-1 truncate whitespace-nowrap rounded-md border border-line bg-surface-sunken px-2.5 text-[11px] text-ink"
+              title={hostLabel}
+            >
+              Host: <strong className="truncate font-semibold text-ink-heading">{hostLabel}</strong>
+            </span>
+          </div>
+        </div>
+
+        <div className="flex gap-1 overflow-x-auto px-5 pb-2.5">
+          <div className="inline-flex gap-0.5 rounded-lg border border-line bg-canvas p-0.5">
             {subTabs.map(tab => {
               const Icon = tab.icon;
               const active = activeSubTab === tab.id;
@@ -196,28 +217,18 @@ export default function CLIAgentsHub({
                       openSkillForEdit(skills[0]);
                     }
                   }}
-                  className={`inline-flex h-6 cursor-pointer items-center gap-1.5 rounded-[5px] border-0 px-2.5 text-[11.5px] font-medium ${
+                  className={`inline-flex h-7 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-md border-0 px-2.5 text-[11.5px] font-medium transition-colors ${
                     active
                       ? 'bg-white text-ink-heading shadow-soft'
-                      : 'bg-transparent text-ink-muted'
+                      : 'bg-transparent text-ink-muted hover:text-ink'
                   }`}
                 >
-                  <Icon size={12} />
+                  <Icon size={12} className="shrink-0" />
                   <span>{tab.label}</span>
                 </button>
               );
             })}
           </div>
-        </div>
-
-        <div className="header-actions gap-2">
-          <span className="tag-badge h-6 px-2.5 font-mono text-[11px]">
-            Slots: <strong className="text-ink-heading">{harnessConfig.activeSlots || 0}/{harnessConfig.maxConcurrentTasks || 2}</strong>
-            {(harnessConfig.queuedTasks || 0) > 0 && <span className="text-warning"> (+{harnessConfig.queuedTasks} queued)</span>}
-          </span>
-          <span className="tag-badge h-6 px-2.5 text-[11px]">
-            Host: <strong className="text-ink-heading">{systemEnv?.platformName || 'Local Environment'}</strong>
-          </span>
         </div>
       </div>
 
