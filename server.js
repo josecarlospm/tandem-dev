@@ -697,10 +697,86 @@ function terminateChildProcessSafely(child) {
   }
 }
 
+function resolveCliBinary(cliCommand) {
+  if (!cliCommand || !String(cliCommand).trim()) return null;
+  const cmd = String(cliCommand).trim();
+  if (path.isAbsolute(cmd)) {
+    try {
+      return fs.existsSync(cmd) ? cmd : null;
+    } catch {
+      return null;
+    }
+  }
+  try {
+    const lookup = process.platform === 'win32' ? `where.exe ${cmd}` : `command -v ${cmd}`;
+    const out = execSync(lookup, { encoding: 'utf8', shell: true }).trim();
+    const first = out.split(/\r?\n/).map(s => s.trim()).find(Boolean);
+    if (first && (!path.isAbsolute(first) || fs.existsSync(first))) return first;
+  } catch {
+    /* not on PATH */
+  }
+  return null;
+}
+
+function postAgentChannelMessage(channelId, agent, content) {
+  if (!channelId) return;
+  const responseMsg = {
+    id: 'msg-resp-' + Date.now(),
+    senderId: agent.id,
+    senderType: 'agent',
+    content,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  };
+  if (!state.messages[channelId]) state.messages[channelId] = [];
+  state.messages[channelId].push(responseMsg);
+  state.unreadCounts[channelId] = (state.unreadCounts[channelId] || 0) + 1;
+  broadcast('unread_counts_updated', state.unreadCounts);
+  broadcast('new_message', { channelId, message: responseMsg });
+}
+
 // --- REAL CLI PROMPT EXECUTION & MULTICA v0.12.1 HARNESS RUNNER ---
 async function runCLIAgent(agentId, rawPrompt, cardId, channelId, options = {}) {
   const agent = state.agents.find(a => a.id === agentId);
   if (!agent) return;
+
+  const resolvedBin = resolveCliBinary(agent.cliCommand);
+  if (!resolvedBin) {
+    const failure = classifyTaskFailure(`command not found: ${agent.cliCommand}`);
+    const responseText = [
+      `**Binary missing:** \`${agent.cliCommand}\` is not installed (or not on PATH).`,
+      '',
+      `Tandem needs a local coding CLI to run tasks. Install one of:`,
+      `- Antigravity CLI (\`agy\`)`,
+      `- Claude Code (\`claude\`)`,
+      `- Codex CLI (\`codex\`)`,
+      '',
+      `Then open **Agents** → Rescan System Tools → Validate CLI.`,
+      '',
+      `*Remediation:* ${failure.remediation}`
+    ].join('\n');
+
+    const card = cardId ? state.cards.find(c => c.id === cardId) : null;
+    if (card) {
+      card.columnId = 'col-in-review';
+      card.results = responseText;
+      card.lastFailure = failure;
+      card.activeRun = null;
+      addExecutionLayer(card, 'stderr', `[${failure.label}] ${agent.cliCommand} not found`);
+      card.comments.push({
+        id: 'cm-err-' + Date.now(),
+        senderId: agent.id,
+        senderType: 'agent',
+        text: `**Run blocked (${failure.label}):** ${responseText}`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      broadcast('card_updated', card);
+    }
+
+    postAgentChannelMessage(channelId, agent, `**${agent.name}:**\n\n${responseText}`);
+    agent.status = 'online';
+    broadcast('agent_status_change', { agentId: agent.id, status: 'online', channelId });
+    return;
+  }
 
   const card = cardId ? state.cards.find(c => c.id === cardId) : null;
   const runKey = card ? card.id : `chat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -817,7 +893,7 @@ async function runCLIAgent(agentId, rawPrompt, cardId, channelId, options = {}) 
   agent.status = 'busy';
   broadcast('agent_status_change', { agentId: agent.id, status: 'busy', cliEngine: agent.cliEngine, channelId });
 
-  const binPath = agent.cliCommand;
+  const binPath = resolvedBin || agent.cliCommand;
 
   if (card) {
     if (!wasTerminalDone) {
@@ -838,16 +914,17 @@ async function runCLIAgent(agentId, rawPrompt, cardId, channelId, options = {}) 
 
   let spawnArgs = [];
   const skipPerms = agent.skipPermissions !== false;
+  const binBase = path.basename(binPath).toLowerCase();
 
-  if (agent.cliCommand.includes('agy')) {
+  if (binBase.includes('agy') || binBase.includes('antigravity')) {
     spawnArgs = skipPerms 
       ? ['--dangerously-skip-permissions', '-p', agenticPromptBundle] 
       : ['-p', agenticPromptBundle];
-  } else if (agent.cliCommand.includes('claude')) {
+  } else if (binBase.includes('claude')) {
     spawnArgs = skipPerms 
       ? ['--dangerously-skip-permissions', '-p', agenticPromptBundle] 
       : ['-p', agenticPromptBundle];
-  } else if (agent.cliCommand.includes('codex')) {
+  } else if (binBase.includes('codex')) {
     spawnArgs = ['exec', agenticPromptBundle];
   } else {
     spawnArgs = agent.cliArgs ? [...agent.cliArgs.split(' ').filter(Boolean), agenticPromptBundle] : [agenticPromptBundle];
@@ -856,6 +933,7 @@ async function runCLIAgent(agentId, rawPrompt, cardId, channelId, options = {}) 
   let fullStdout = '';
   let fullStderr = '';
 
+  // Prefer direct spawn (no shell) once the binary is resolved — avoids shell metacharacter errors in prompts.
   const useShell = !path.isAbsolute(binPath);
   const child = spawn(binPath, spawnArgs, {
     shell: useShell,
