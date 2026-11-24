@@ -98,6 +98,18 @@ function loadUsersFromDB() {
           migrated = true;
         }
       });
+
+      // Keep local passwords aligned with .env so login matches documented credentials.
+      const syncPassword = (process.env.TANDEM_INITIAL_PASSWORD || '').trim();
+      if (syncPassword) {
+        const nextHash = hashPassword(syncPassword);
+        users.forEach(u => {
+          u.password = nextHash;
+        });
+        migrated = true;
+        bootstrapBanner = `[AUTH] Synced all local user passwords from TANDEM_INITIAL_PASSWORD (.env).`;
+      }
+
       if (migrated) {
         fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2));
       }
