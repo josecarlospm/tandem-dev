@@ -446,9 +446,9 @@ description: Deterministic unit and integration testing rules
     github: {
       connected: true,
       instanceUrl: 'https://github.com',
-      repoPath: 'josecarlospm/tandem-dev',
+      repoPath: process.env.GITHUB_REPO_PATH || 'josecarlospm/tandem-dev',
       defaultBranch: 'main',
-      accessToken: 'ghp_â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+      accessToken: '',
       autoCreatePR: true,
       cliDetected: envScanResult.detectedMap['tool-github']?.isInstalled || false,
       cliPath: envScanResult.detectedMap['tool-github']?.resolvedPath || 'git',
@@ -458,38 +458,22 @@ description: Deterministic unit and integration testing rules
         : '[READY] Connected via GitHub REST API v3'
     },
     vercel: {
-      connected: true,
-      teamSlug: 'josecarlospm',
-      projectName: 'tandem-dev',
-      productionDomain: 'tandem-dev.vercel.app',
+      connected: Boolean(process.env.VERCEL_PROJECT_NAME && process.env.VERCEL_PRODUCTION_DOMAIN),
+      teamSlug: process.env.VERCEL_TEAM_SLUG || '',
+      projectName: process.env.VERCEL_PROJECT_NAME || '',
+      productionDomain: process.env.VERCEL_PRODUCTION_DOMAIN || '',
       framework: 'vite',
-      accessToken: 'vcel_â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+      accessToken: '',
       autoDeployPreview: true,
       cliDetected: envScanResult.detectedMap['tool-vercel']?.isInstalled || false,
       cliPath: envScanResult.detectedMap['tool-vercel']?.resolvedPath || 'vercel',
       lastSyncedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      statusMessage: envScanResult.detectedMap['tool-vercel']?.isInstalled
-        ? `[READY] Vercel CLI detected at ${envScanResult.detectedMap['tool-vercel'].resolvedPath}`
-        : '[READY] Connected via Vercel Edge Deployment API'
+      statusMessage: (process.env.VERCEL_PROJECT_NAME && process.env.VERCEL_PRODUCTION_DOMAIN)
+        ? `[READY] Linked to owned Vercel domain ${process.env.VERCEL_PRODUCTION_DOMAIN}`
+        : 'Not configured - link your owned Vercel project and domain before deploying.'
     }
   },
-  deployments: [
-    {
-      id: 'dep-101',
-      cardId: 'card-1',
-      cardTitle: 'Implement JWT Refresh Token Rotation',
-      environment: 'Preview',
-      branch: 'feat/jwt-refresh-token-rotation',
-      commitSha: '8f3a9c1',
-      githubPrNumber: '#1',
-      githubPrUrl: 'https://github.com/josecarlospm/tandem-dev/pull/1',
-      url: 'https://tandem-dev-git-feat-jwt-josecarlospm.vercel.app',
-      status: 'READY',
-      duration: '24s',
-      triggeredBy: 'You (Dev)',
-      timestamp: '18:42'
-    }
-  ],
+  deployments: [],
   cards: [
     {
       id: 'card-1',
@@ -508,24 +492,8 @@ description: Deterministic unit and integration testing rules
       ],
       shipping: {
         branch: 'feat/jwt-refresh-token-rotation',
-        githubPR: {
-          number: '#42',
-          title: 'feat(auth): implement JWT refresh token rotation',
-          url: 'https://github.com/vibecoding/collaboration-board/pull/42',
-          status: 'open',
-          checksStatus: 'passed',
-          commitSha: '8f3a9c1',
-          targetBranch: 'main',
-          updatedAt: '18:40'
-        },
-        vercelDeploy: {
-          id: 'dep-101',
-          environment: 'Preview',
-          url: 'https://collaboration-board-git-feat-jwt-vibecoding-team.vercel.app',
-          status: 'READY',
-          duration: '24s',
-          updatedAt: '18:42'
-        }
+        githubPR: null,
+        vercelDeploy: null
       },
       results: null
     }
@@ -1911,9 +1879,9 @@ wss.on('connection', (ws) => {
           exec(`"${cmd}" --version`, { cwd: process.cwd() }, (err, stdout) => {
             const latency = Date.now() - start;
             const ver = !err && stdout ? stdout.trim().split('\n')[0] : 'GitHub REST API v3';
-            gh.connected = true;
+            gh.connected = Boolean(gh.repoPath);
             gh.lastSyncedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            gh.statusMessage = `[VERIFIED] ${ver} Â· Repo: ${gh.repoPath} (${gh.defaultBranch}) Â· ${latency}ms`;
+            gh.statusMessage = `[VERIFIED] ${ver} | Repo: ${gh.repoPath} (${gh.defaultBranch}) | ${latency}ms`;
             broadcast('integrations_updated', { integrations: state.integrations, deployments: state.deployments });
           });
         } else if (provider === 'vercel') {
@@ -1922,10 +1890,13 @@ wss.on('connection', (ws) => {
           const start = Date.now();
           exec(`"${cmd}" --version`, { cwd: process.cwd() }, (err, stdout) => {
             const latency = Date.now() - start;
-            const ver = !err && stdout ? `Vercel CLI ${stdout.trim().split('\n').pop()}` : 'Vercel Edge REST API';
-            vc.connected = true;
+            const hasOwnedDomain = Boolean(vc.projectName && vc.productionDomain);
+            const ver = !err && stdout ? `Vercel CLI ${stdout.trim().split('\n').pop()}` : 'Vercel CLI not installed';
+            vc.connected = hasOwnedDomain;
             vc.lastSyncedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            vc.statusMessage = `[VERIFIED] ${ver} Â· Project: ${vc.projectName} (${vc.productionDomain}) Â· ${latency}ms`;
+            vc.statusMessage = hasOwnedDomain
+              ? `[VERIFIED] ${ver} | Project: ${vc.projectName} (${vc.productionDomain}) | ${latency}ms`
+              : `[CLI CHECK] ${ver} (${latency}ms) - set your owned Project Name & Production Domain to enable deployments.`;
             broadcast('integrations_updated', { integrations: state.integrations, deployments: state.deployments });
           });
         }
@@ -1941,7 +1912,7 @@ wss.on('connection', (ws) => {
         const slug = (card.title || 'task').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 36);
         const branch = branchName || card.shipping?.branch || `feat/${slug}`;
         const commitSha = crypto.randomBytes(4).toString('hex').slice(0, 7);
-        const prNumberInt = Math.floor(43 + Math.random() * 50);
+        const prNumberInt = Math.floor(1 + Math.random() * 20);
         const number = card.shipping?.githubPR?.number || `#${prNumberInt}`;
         const numericPr = number.replace('#', '');
         const prUrl = `${gh.instanceUrl.replace(/\/$/, '')}/${gh.repoPath}/pull/${numericPr}`;
@@ -1977,7 +1948,7 @@ wss.on('connection', (ws) => {
             id: 'cm-gh-' + Date.now(),
             senderId: requester.id,
             senderType: 'user',
-            text: `**GitHub Pull Request Ready:** Opened **PR ${number}** (\`${branch}\` â†’ \`${gh.defaultBranch}\`, commit \`${commitSha}\`).\nGitHub Actions: **Checks Passed** Â· [View Pull Request](${prUrl})`,
+            text: `**GitHub Pull Request Ready:** Opened **PR ${number}** (\`${branch}\` -> \`${gh.defaultBranch}\`, commit \`${commitSha}\`).\nGitHub Actions: **Checks Passed** | [View Pull Request](${prUrl})`,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           });
 
@@ -1989,7 +1960,7 @@ wss.on('connection', (ws) => {
               id: 'msg-gh-' + Date.now(),
               senderId: requester.id,
               senderType: 'user',
-              content: `**GitHub PR ${number} Opened** for **[${card.title}]** on branch \`${branch}\` (\`${commitSha}\`) â†’ \`${gh.defaultBranch}\`.\nGitHub Actions: **Checks Passed** Â· ${prUrl}`,
+              content: `**GitHub PR ${number} Opened** for **[${card.title}]** on branch \`${branch}\` (\`${commitSha}\`) -> \`${gh.defaultBranch}\`.\nGitHub Actions: **Checks Passed** | ${prUrl}`,
               timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
               cardId: card.id
             };
@@ -2001,9 +1972,18 @@ wss.on('connection', (ws) => {
 
       if (type === 'deploy_card_to_vercel') {
         const { cardId, environment = 'Preview', requesterId } = payload;
+        const vc = state.integrations.vercel;
+
+        if (!vc.connected || !vc.projectName?.trim() || !vc.productionDomain?.trim()) {
+          ws.send(JSON.stringify({
+            type: 'error_notification',
+            payload: { message: 'Vercel is not configured: link your owned Vercel Project Name and Production Domain in Integrations -> GitHub & Vercel first.' }
+          }));
+          return;
+        }
+
         const card = state.cards.find(c => c.id === cardId);
         const requester = state.users.find(u => u.id === requesterId) || state.users[0];
-        const vc = state.integrations.vercel;
         const gh = state.integrations.github;
 
         const slug = card
@@ -2013,9 +1993,10 @@ wss.on('connection', (ws) => {
         const commitSha = card?.shipping?.githubPR?.commitSha || crypto.randomBytes(4).toString('hex').slice(0, 7);
         const deployId = 'dep-' + Date.now().toString().slice(-5);
 
-        const deployUrl = environment === 'Production'
-          ? `https://${vc.productionDomain}`
-          : `https://${vc.projectName}-git-${slug.slice(0, 18)}-${vc.teamSlug}.vercel.app`;
+        const cleanProdDomain = vc.productionDomain.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+        const deployUrl = environment === 'Production' || !vc.teamSlug?.trim()
+          ? `https://${cleanProdDomain}`
+          : `https://${vc.projectName.trim()}-git-${slug.slice(0, 18)}-${vc.teamSlug.trim()}.vercel.app`;
 
         if (card) {
           if (!card.shipping) card.shipping = { branch };
@@ -2084,7 +2065,7 @@ wss.on('connection', (ws) => {
               id: 'msg-vc-' + Date.now(),
               senderId: requester.id,
               senderType: 'user',
-              content: `**Vercel ${environment} Deployed** (${duration}) for **[${card ? card.title : vc.projectName}]** Â· Live at ${deployUrl}`,
+              content: `**Vercel ${environment} Deployed** (${duration}) for **[${card ? card.title : vc.projectName}]** | Live at ${deployUrl}`,
               timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
               cardId: card ? card.id : null
             };
@@ -2119,9 +2100,10 @@ wss.on('connection', (ws) => {
 
         broadcast('card_updated', card);
 
-        // If Vercel is connected, automatically ship Production build on merge
-        if (vc.connected) {
-          const prodUrl = `https://${vc.productionDomain}`;
+        // Only ship Production build on merge when an owned Vercel domain is explicitly configured
+        if (vc.connected && vc.projectName?.trim() && vc.productionDomain?.trim()) {
+          const cleanProdDomain = vc.productionDomain.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+          const prodUrl = `https://${cleanProdDomain}`;
           const deployId = 'dep-' + Date.now().toString().slice(-5);
           const duration = '21s';
           card.shipping.vercelDeploy = {

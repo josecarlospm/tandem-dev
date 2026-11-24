@@ -56,9 +56,9 @@ export default function CLIAgentsHub({
   const [ghAutoPR, setGhAutoPR] = useState(integrations.github?.autoCreatePR !== false);
 
   const [editingVercel, setEditingVercel] = useState(false);
-  const [vcTeam, setVcTeam] = useState(integrations.vercel?.teamSlug || 'josecarlospm');
-  const [vcProject, setVcProject] = useState(integrations.vercel?.projectName || 'tandem-dev');
-  const [vcDomain, setVcDomain] = useState(integrations.vercel?.productionDomain || 'tandem-dev.vercel.app');
+  const [vcTeam, setVcTeam] = useState(integrations.vercel?.teamSlug || '');
+  const [vcProject, setVcProject] = useState(integrations.vercel?.projectName || '');
+  const [vcDomain, setVcDomain] = useState(integrations.vercel?.productionDomain || '');
   const [vcToken, setVcToken] = useState(integrations.vercel?.accessToken || '');
   const [vcAutoPreview, setVcAutoPreview] = useState(integrations.vercel?.autoDeployPreview !== false);
 
@@ -94,13 +94,15 @@ export default function CLIAgentsHub({
 
   const handleSaveVercel = () => {
     if (!canConfigure) return;
+    const cleanDomain = vcDomain.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+    const cleanProject = vcProject.trim();
     onUpdateIntegrationConfig?.('vercel', {
-      teamSlug: vcTeam,
-      projectName: vcProject,
-      productionDomain: vcDomain,
+      teamSlug: vcTeam.trim(),
+      projectName: cleanProject,
+      productionDomain: cleanDomain,
       accessToken: vcToken,
       autoDeployPreview: vcAutoPreview,
-      connected: true
+      connected: Boolean(cleanProject && cleanDomain)
     });
     setEditingVercel(false);
   };
@@ -823,9 +825,15 @@ export default function CLIAgentsHub({
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button 
                   className="btn btn-primary" 
-                  onClick={() => onDeployWorkspaceToVercel?.('Production')}
+                  onClick={() => {
+                    if (!vercel.connected || !vercel.productionDomain) {
+                      setEditingVercel(true);
+                      return;
+                    }
+                    onDeployWorkspaceToVercel?.('Production');
+                  }}
                 >
-                  <Rocket size={13} /> Ship Production Release
+                  <Rocket size={13} /> {vercel.connected && vercel.productionDomain ? 'Ship Production Release' : 'Configure Vercel to Ship'}
                 </button>
               </div>
             </div>
@@ -872,7 +880,7 @@ export default function CLIAgentsHub({
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <span style={{ color: 'var(--text-muted)' }}>Repository</span>
                           <code style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-subtle)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-heading)', fontSize: '11.5px' }}>
-                            {github.repoPath || 'vibecoding/collaboration-board'}
+                            {github.repoPath || 'josecarlospm/tandem-dev'}
                           </code>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -936,7 +944,7 @@ export default function CLIAgentsHub({
                     <RefreshCw size={11.5} /> Verify GitHub
                   </button>
                   <a 
-                    href={`${(github.instanceUrl || 'https://github.com').replace(/\/$/, '')}/${github.repoPath || 'vibecoding/collaboration-board'}`}
+                    href={`${(github.instanceUrl || 'https://github.com').replace(/\/$/, '')}/${github.repoPath || 'josecarlospm/tandem-dev'}`}
                     target="_blank"
                     rel="noreferrer"
                     style={{ fontSize: '11.5px', color: 'var(--text-muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
@@ -958,8 +966,15 @@ export default function CLIAgentsHub({
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <h3 style={{ color: 'var(--text-heading)', fontSize: '14px', fontWeight: 600, margin: 0 }}>Vercel Edge Network</h3>
-                          <span className="tag-badge" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.25)' }}>
-                            Connected
+                          <span
+                            className="tag-badge"
+                            style={{
+                              background: (vercel.connected && vercel.productionDomain) ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.12)',
+                              color: (vercel.connected && vercel.productionDomain) ? '#10b981' : '#f59e0b',
+                              borderColor: (vercel.connected && vercel.productionDomain) ? 'rgba(16, 185, 129, 0.25)' : 'rgba(245, 158, 11, 0.28)'
+                            }}
+                          >
+                            {(vercel.connected && vercel.productionDomain) ? 'Connected' : 'Not Configured'}
                           </span>
                         </div>
                         <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Instant Preview URLs & Zero-Downtime Production</span>
@@ -983,18 +998,18 @@ export default function CLIAgentsHub({
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <span style={{ color: 'var(--text-muted)' }}>Team / Org</span>
-                          <span style={{ color: 'var(--text-heading)', fontWeight: 500 }}>{vercel.teamSlug || 'vibecoding-team'}</span>
+                          <span style={{ color: 'var(--text-heading)', fontWeight: 500 }}>{vercel.teamSlug || 'Not set'}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <span style={{ color: 'var(--text-muted)' }}>Vercel Project</span>
                           <code style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-subtle)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-heading)', fontSize: '11.5px' }}>
-                            {vercel.projectName || 'collaboration-board'}
+                            {vercel.projectName || 'Unlinked'}
                           </code>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <span style={{ color: 'var(--text-muted)' }}>Production Domain</span>
-                          <span style={{ color: '#38bdf8', fontFamily: 'var(--font-mono)', fontSize: '11.5px' }}>
-                            {vercel.productionDomain || 'collaboration-board.vercel.app'}
+                          <span style={{ color: vercel.productionDomain ? '#38bdf8' : 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11.5px' }}>
+                            {vercel.productionDomain || 'Configure owned domain'}
                           </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1008,17 +1023,17 @@ export default function CLIAgentsHub({
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                           <div>
-                            <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Team Slug</label>
-                            <input type="text" className="chat-input" style={{ height: '30px', fontSize: '12px' }} value={vcTeam} onChange={(e) => setVcTeam(e.target.value)} />
+                            <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Team / Account Slug</label>
+                            <input type="text" className="chat-input" style={{ height: '30px', fontSize: '12px' }} value={vcTeam} onChange={(e) => setVcTeam(e.target.value)} placeholder="your-vercel-scope" />
                           </div>
                           <div>
-                            <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Project Name</label>
-                            <input type="text" className="chat-input" style={{ height: '30px', fontSize: '12px' }} value={vcProject} onChange={(e) => setVcProject(e.target.value)} />
+                            <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Owned Project Name</label>
+                            <input type="text" className="chat-input" style={{ height: '30px', fontSize: '12px' }} value={vcProject} onChange={(e) => setVcProject(e.target.value)} placeholder="my-vercel-project" />
                           </div>
                         </div>
                         <div>
-                          <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Production Domain</label>
-                          <input type="text" className="chat-input" style={{ height: '30px', fontSize: '12px' }} value={vcDomain} onChange={(e) => setVcDomain(e.target.value)} placeholder="app.vercel.app" />
+                          <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Owned Production Domain</label>
+                          <input type="text" className="chat-input" style={{ height: '30px', fontSize: '12px' }} value={vcDomain} onChange={(e) => setVcDomain(e.target.value)} placeholder="your-owned-app.vercel.app or app.yourdomain.com" />
                         </div>
                         <div>
                           <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Vercel Access Token</label>
@@ -1039,27 +1054,31 @@ export default function CLIAgentsHub({
                       <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                         Vercel Status
                       </span>
-                      <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>{vercel.lastSyncedAt || 'Synced'}</span>
+                      <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>{vercel.lastSyncedAt || 'Idle'}</span>
                     </div>
-                    <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: '#10b981' }}>
-                      {vercel.statusMessage || '[READY] Connected to Vercel Edge Network'}
+                    <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: (vercel.connected && vercel.productionDomain) ? '#10b981' : 'var(--text-muted)' }}>
+                      {vercel.statusMessage || 'Link your owned Vercel project and domain before deploying.'}
                     </div>
                   </div>
                 </div>
 
                 <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <button className="btn btn-secondary" style={{ height: '28px', fontSize: '11.5px', padding: '0 10px' }} onClick={() => onTestIntegrationConnection?.('vercel')}>
-                    <RefreshCw size={11.5} /> Verify Vercel
+                    <RefreshCw size={11.5} /> Verify Vercel CLI
                   </button>
-                  <a 
-                    href={`https://${vercel.productionDomain || 'collaboration-board.vercel.app'}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ fontSize: '11.5px', color: 'var(--text-muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    <span>Visit Production</span>
-                    <ExternalLink size={11} />
-                  </a>
+                  {vercel.productionDomain ? (
+                    <a 
+                      href={`https://${vercel.productionDomain.replace(/^https?:\/\//, '')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ fontSize: '11.5px', color: 'var(--text-muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      <span>Visit Production</span>
+                      <ExternalLink size={11} />
+                    </a>
+                  ) : (
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No domain linked</span>
+                  )}
                 </div>
               </div>
             </div>
