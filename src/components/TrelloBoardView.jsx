@@ -31,74 +31,46 @@ function SearchableChannelSelect({ channels = [], selectedChannelId, onSelectCha
   );
 
   return (
-    <div ref={dropdownRef} style={{ position: 'relative', width: '100%' }}>
+    <div ref={dropdownRef} className="relative w-full">
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        style={{
-          background: 'var(--bg-chat-input)',
-          border: '1px solid var(--border-color)',
-          borderRadius: '7px',
-          height: '36px',
-          padding: '0 12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          cursor: 'pointer',
-          userSelect: 'none'
-        }}
+        className="flex h-9 cursor-pointer select-none items-center justify-between rounded-lg border border-line bg-white px-3"
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+        <div className="flex items-center gap-1.5 overflow-hidden">
           {selectedChannel?.isPrivate ? (
-            <Lock size={13} color="#f59e0b" />
+            <Lock size={13} className="text-warning shrink-0" />
           ) : (
-            <Hash size={14} color="var(--text-muted)" />
+            <Hash size={14} className="text-ink-muted shrink-0" />
           )}
-          <span style={{ color: 'var(--text-heading)', fontWeight: 500, fontSize: '13px' }}>
+          <span className="text-[13px] font-medium text-ink-heading truncate">
             {selectedChannel ? selectedChannel.name : 'Select Channel'}
           </span>
           {selectedChannel?.isPrivate && (
-            <span style={{ fontSize: '10px', background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', padding: '1px 5px', borderRadius: '4px' }}>
+            <span className="rounded border border-amber-200 bg-amber-50 px-1.5 py-px text-[10px] font-medium text-warning">
               Private
             </span>
           )}
         </div>
-        <ChevronDown size={14} color="var(--text-muted)" />
+        <ChevronDown size={14} className="text-ink-muted shrink-0" />
       </div>
 
       {isOpen && (
-        <div 
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 4px)',
-            left: 0,
-            right: 0,
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-strong)',
-            borderRadius: '8px',
-            boxShadow: 'var(--shadow-lg)',
-            zIndex: 999,
-            padding: '6px',
-            maxHeight: '200px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '6px'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-darkest)', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-            <Search size={13} color="var(--text-muted)" />
+        <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-[999] flex max-h-[200px] flex-col gap-1.5 rounded-lg border border-line-strong bg-white p-1.5 shadow-modal">
+          <div className="flex items-center gap-1.5 rounded-md border border-line bg-surface-muted px-2.5 py-1.5">
+            <Search size={13} className="text-ink-muted shrink-0" />
             <input 
               type="text" 
               placeholder="Filter channels..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ background: 'transparent', border: 'none', color: 'var(--text-heading)', fontSize: '12px', width: '100%', outline: 'none', fontFamily: 'var(--font-sans)' }}
+              className="w-full border-none bg-transparent text-xs text-ink-heading outline-none font-sans"
               autoFocus
             />
           </div>
 
-          <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
             {filteredChannels.length === 0 ? (
-              <div style={{ padding: '8px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center' }}>
+              <div className="px-2 py-2 text-center text-xs text-ink-muted">
                 No accessible channels found
               </div>
             ) : (
@@ -112,27 +84,21 @@ function SearchableChannelSelect({ channels = [], selectedChannelId, onSelectCha
                       setIsOpen(false);
                       setSearchQuery('');
                     }}
-                    style={{
-                      padding: '6px 10px',
-                      borderRadius: '5px',
-                      background: isSelected ? 'var(--bg-active)' : 'transparent',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
-                    }}
+                    className={`flex cursor-pointer items-center justify-between rounded-md px-2.5 py-1.5 transition-colors ${
+                      isSelected ? 'bg-accent-soft' : 'hover:bg-surface-muted'
+                    }`}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '7px', overflow: 'hidden' }}>
+                    <div className="flex items-center gap-1.5 overflow-hidden">
                       {ch.isPrivate ? (
-                        <Lock size={13} color="#f59e0b" />
+                        <Lock size={13} className="text-warning shrink-0" />
                       ) : (
-                        <Hash size={13} color="var(--text-muted)" />
+                        <Hash size={13} className="text-ink-muted shrink-0" />
                       )}
-                      <span style={{ fontSize: '12.5px', fontWeight: isSelected ? 600 : 450, color: 'var(--text-heading)' }}>
+                      <span className={`text-[12.5px] text-ink-heading truncate ${isSelected ? 'font-semibold' : 'font-medium'}`}>
                         {ch.name}
                       </span>
                     </div>
-                    {isSelected && <Check size={13} color="#818cf8" />}
+                    {isSelected && <Check size={13} className="text-accent shrink-0" />}
                   </div>
                 );
               })
@@ -215,13 +181,13 @@ export default function TrelloBoardView({
   };
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="flex flex-1 flex-col overflow-hidden">
       {/* Header */}
       <div className="view-header">
         <div className="header-title">
-          <LayoutGrid size={16} color="var(--text-muted)" />
+          <LayoutGrid size={16} className="text-ink-muted" />
           <span>Task Board</span>
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 400, marginLeft: '4px' }}>
+          <span className="ml-1 text-xs font-normal text-ink-muted">
             Drag cards across columns · Click any card to inspect
           </span>
         </div>
@@ -242,25 +208,22 @@ export default function TrelloBoardView({
           return (
             <div 
               key={col.id} 
-              className="kanban-column"
+              className={`kanban-column transition-all duration-150 ${
+                isOver ? 'border-dashed border-accent bg-accent-soft' : ''
+              }`}
               onDragOver={(e) => handleDragOver(e, col.id)}
               onDragLeave={(e) => handleDragLeave(e, col.id)}
               onDrop={(e) => handleDrop(e, col.id)}
-              style={{
-                border: isOver ? '1px dashed var(--accent-primary)' : '1px solid var(--border-color)',
-                background: isOver ? 'rgba(94, 106, 210, 0.06)' : undefined,
-                transition: 'all 0.14s ease'
-              }}
             >
               <div className="column-header">
                 <div className="column-title">
-                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: col.color }} />
+                  <span className="h-[7px] w-[7px] shrink-0 rounded-full" style={{ background: col.color }} />
                   <span>{col.title}</span>
                 </div>
                 <span className="column-count">{colCards.length}</span>
               </div>
 
-              <div className="column-cards" style={{ minHeight: '120px' }}>
+              <div className="column-cards min-h-[120px]">
                 {colCards.map(card => {
                   const assignedAgent = agents.find(a => a.id === card.assignedAgentId);
                   const assignedUserObjs = users.filter(u => card.assignedUsers?.includes(u.id));
@@ -273,15 +236,10 @@ export default function TrelloBoardView({
                   return (
                     <div 
                       key={card.id} 
-                      className="kanban-card"
+                      className={`kanban-card cursor-grab ${isRunning ? 'border-accent-mid' : ''} ${isDraggingThis ? 'opacity-45' : ''}`}
                       draggable={true}
                       onDragStart={(e) => handleDragStart(e, card.id)}
                       onDragEnd={() => { setDraggingCardId(null); setDragOverColId(null); }}
-                      style={{ 
-                        opacity: isDraggingThis ? 0.45 : 1,
-                        cursor: 'grab',
-                        borderColor: isRunning ? 'rgba(129, 140, 248, 0.45)' : undefined
-                      }}
                       onClick={() => onCardClick(card)}
                     >
                       <div className="card-tags">
@@ -290,25 +248,24 @@ export default function TrelloBoardView({
                         ))}
                         {linkedChannel && (
                           <span 
-                            className="tag-badge" 
-                            style={{ 
-                              background: linkedChannel.isPrivate ? 'rgba(245, 158, 11, 0.1)' : 'rgba(94, 106, 210, 0.1)', 
-                              color: linkedChannel.isPrivate ? '#f59e0b' : '#818cf8', 
-                              borderColor: linkedChannel.isPrivate ? 'rgba(245, 158, 11, 0.25)' : 'rgba(94, 106, 210, 0.25)' 
-                            }}
+                            className={`tag-badge ${
+                              linkedChannel.isPrivate
+                                ? 'border-amber-200 bg-amber-50 text-warning'
+                                : 'border-accent-mid bg-accent-soft text-accent'
+                            }`}
                           >
                             {linkedChannel.isPrivate ? <Lock size={9.5} /> : <Hash size={9.5} />}
                             <span>{linkedChannel.name}</span>
                           </span>
                         )}
                         {isRunning && (
-                          <span className="tag-badge" style={{ background: 'rgba(94, 106, 210, 0.2)', color: '#a5b4fc', borderColor: 'rgba(94, 106, 210, 0.4)', fontFamily: 'var(--font-mono)' }}>
-                            <Loader2 size={10} style={{ animation: 'spin 1.5s linear infinite' }} />
+                          <span className="tag-badge border-accent-mid bg-accent-soft font-mono text-accent">
+                            <Loader2 size={10} className="animate-spin" style={{ animationDuration: '1.5s' }} />
                             <span>{card.activeRun?.status === 'queued' ? 'Queued' : (card.activeRun?.runId || 'Running')}</span>
                           </span>
                         )}
                         {!isRunning && card.lastFailure && (
-                          <span className="tag-badge" style={{ background: 'rgba(239, 68, 68, 0.12)', color: '#fca5a5', borderColor: 'rgba(239, 68, 68, 0.28)' }}>
+                          <span className="tag-badge border-red-200 bg-red-50 text-danger">
                             <span>{card.lastFailure.label}</span>
                           </span>
                         )}
@@ -316,24 +273,23 @@ export default function TrelloBoardView({
 
                       <div className="card-title">{card.title}</div>
                       {card.description && (
-                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.45, lineClamp: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        <div className="line-clamp-2 text-xs leading-snug text-ink-muted">
                           {card.description}
                         </div>
                       )}
 
                       {/* AI Agent & Shipping Chips */}
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
+                      <div className="mt-0.5 flex flex-wrap gap-1">
                         {assignedAgent && (
-                          <div className="agent-chip" style={{ background: 'rgba(255, 255, 255, 0.03)', color: 'var(--text-normal)', border: '1px solid var(--border-subtle)' }}>
+                          <div className="agent-chip border border-line-soft bg-surface-muted text-ink">
                             <Bot size={11} color={assignedAgent.color} />
                             <span>{assignedAgent.name}</span>
                           </div>
                         )}
                         {card.shipping?.githubPR && (
                           <div 
-                            className="agent-chip" 
+                            className="agent-chip border border-accent-mid bg-accent-soft font-mono text-accent"
                             title={`GitHub PR ${card.shipping.githubPR.number} (${card.shipping.githubPR.status})`}
-                            style={{ background: 'rgba(94, 106, 210, 0.12)', color: '#a5b4fc', border: '1px solid rgba(94, 106, 210, 0.28)', fontFamily: 'var(--font-mono)' }}
                           >
                             <GitPullRequest size={10.5} />
                             <span>PR {card.shipping.githubPR.number}</span>
@@ -341,9 +297,8 @@ export default function TrelloBoardView({
                         )}
                         {card.shipping?.vercelDeploy && (
                           <div 
-                            className="agent-chip" 
+                            className="agent-chip border border-emerald-200 bg-emerald-50 text-success"
                             title={`Vercel ${card.shipping.vercelDeploy.environment}: ${card.shipping.vercelDeploy.status}`}
-                            style={{ background: 'rgba(16, 185, 129, 0.08)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.25)' }}
                           >
                             <Globe size={10.5} />
                             <span>{card.shipping.vercelDeploy.environment === 'Production' ? 'Prod' : 'Preview'}</span>
@@ -359,21 +314,21 @@ export default function TrelloBoardView({
                           ))}
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                        <div className="flex items-center gap-2.5 text-[11px] text-ink-muted">
                           {subtasks.length > 0 && (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: completedSubtasks === subtasks.length ? '#10b981' : 'var(--text-muted)' }}>
+                            <span className={`flex items-center gap-0.5 ${completedSubtasks === subtasks.length ? 'text-success' : ''}`}>
                               <CheckSquare size={11.5} />
                               {completedSubtasks}/{subtasks.length}
                             </span>
                           )}
                           {card.comments?.length > 0 && (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <span className="flex items-center gap-0.5">
                               <MessageSquare size={11.5} />
                               {card.comments.length}
                             </span>
                           )}
                           {card.logs?.length > 0 && (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: isRunning ? '#818cf8' : '#10b981' }}>
+                            <span className={`flex items-center gap-0.5 ${isRunning ? 'text-accent' : 'text-success'}`}>
                               <Terminal size={11.5} />
                               {card.logs.length}
                             </span>
@@ -394,18 +349,18 @@ export default function TrelloBoardView({
         <div className="task-drawer-overlay" onClick={() => setShowAddModal(false)}>
           <div 
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-main)', padding: '24px', borderRadius: '12px', width: '440px', maxWidth: '92vw', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}
+            className="w-[440px] max-w-[92vw] rounded-xl border border-line bg-white p-6 shadow-modal"
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
-              <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-heading)' }}>New Task Card</h3>
-              <button className="btn btn-secondary" style={{ width: '28px', height: '28px', padding: 0 }} onClick={() => setShowAddModal(false)}>
+            <div className="mb-[18px] flex items-center justify-between">
+              <h3 className="text-[15px] font-semibold text-ink-heading">New Task Card</h3>
+              <button className="btn btn-secondary h-7 w-7 p-0" onClick={() => setShowAddModal(false)}>
                 <X size={14} />
               </button>
             </div>
 
             <form onSubmit={handleCreate}>
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '11.5px', fontWeight: 500, color: 'var(--text-normal)', display: 'block', marginBottom: '5px' }}>Task Title</label>
+              <div className="mb-3.5">
+                <label className="mb-1.5 block text-[11.5px] font-medium text-ink">Task Title</label>
                 <input 
                   type="text" 
                   className="chat-input" 
@@ -417,19 +372,18 @@ export default function TrelloBoardView({
                 />
               </div>
 
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '11.5px', fontWeight: 500, color: 'var(--text-normal)', display: 'block', marginBottom: '5px' }}>Description & Prompt Instructions</label>
+              <div className="mb-3.5">
+                <label className="mb-1.5 block text-[11.5px] font-medium text-ink">Description & Prompt Instructions</label>
                 <textarea 
-                  className="chat-input" 
-                  style={{ height: '80px', padding: '8px 12px', resize: 'vertical' }}
+                  className="chat-input h-20 resize-y px-3 py-2" 
                   placeholder="Context and acceptance criteria for the AI agent..."
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                 />
               </div>
 
-              <div style={{ marginBottom: '14px', position: 'relative', zIndex: 50 }}>
-                <label style={{ fontSize: '11.5px', fontWeight: 500, color: 'var(--text-normal)', display: 'block', marginBottom: '5px' }}>
+              <div className="relative z-50 mb-3.5">
+                <label className="mb-1.5 block text-[11.5px] font-medium text-ink">
                   Linked Channel
                 </label>
                 <SearchableChannelSelect 
@@ -440,12 +394,12 @@ export default function TrelloBoardView({
                 />
               </div>
 
-              <div style={{ marginBottom: '20px', position: 'relative', zIndex: 1 }}>
-                <label style={{ fontSize: '11.5px', fontWeight: 500, color: 'var(--text-normal)', display: 'block', marginBottom: '5px' }}>Assigned AI Agent</label>
+              <div className="relative z-[1] mb-5">
+                <label className="mb-1.5 block text-[11.5px] font-medium text-ink">Assigned AI Agent</label>
                 <select 
                   value={selectedAgent} 
                   onChange={(e) => setSelectedAgent(e.target.value)}
-                  style={{ background: 'var(--bg-chat-input)', color: 'var(--text-heading)', border: '1px solid var(--border-color)', height: '36px', padding: '0 12px', borderRadius: '7px', width: '100%', fontSize: '13px' }}
+                  className="form-input h-9"
                 >
                   {agents.map(a => (
                     <option key={a.id} value={a.id}>{a.name} ({a.cliEngine})</option>
@@ -453,7 +407,7 @@ export default function TrelloBoardView({
                 </select>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <div className="flex justify-end gap-2">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary">Create Task</button>
               </div>

@@ -172,17 +172,17 @@ export default function CLIAgentsHub({
   ];
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="flex flex-1 flex-col overflow-hidden">
       {/* View Header */}
       <div className="view-header">
-        <div className="header-title" style={{ gap: '14px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Cpu size={16} color="var(--text-muted)" />
+        <div className="header-title flex-wrap gap-3.5">
+          <div className="flex items-center gap-2">
+            <Cpu size={16} className="text-ink-muted" />
             <span>Multica Harness & Integrations</span>
           </div>
 
           {/* Segmented Sub-Navigation */}
-          <div style={{ display: 'flex', background: 'var(--bg-darkest)', padding: '2px', borderRadius: '7px', border: '1px solid var(--border-color)', gap: '2px' }}>
+          <div className="flex gap-0.5 rounded-[7px] border border-line bg-canvas p-0.5">
             {subTabs.map(tab => {
               const Icon = tab.icon;
               const active = activeSubTab === tab.id;
@@ -196,20 +196,11 @@ export default function CLIAgentsHub({
                       openSkillForEdit(skills[0]);
                     }
                   }}
-                  style={{
-                    height: '24px',
-                    padding: '0 10px',
-                    borderRadius: '5px',
-                    border: 'none',
-                    fontSize: '11.5px',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    background: active ? 'var(--bg-surface-elevated)' : 'transparent',
-                    color: active ? 'var(--text-heading)' : 'var(--text-muted)'
-                  }}
+                  className={`inline-flex h-6 cursor-pointer items-center gap-1.5 rounded-[5px] border-0 px-2.5 text-[11.5px] font-medium ${
+                    active
+                      ? 'bg-white text-ink-heading shadow-soft'
+                      : 'bg-transparent text-ink-muted'
+                  }`}
                 >
                   <Icon size={12} />
                   <span>{tab.label}</span>
@@ -219,24 +210,24 @@ export default function CLIAgentsHub({
           </div>
         </div>
 
-        <div className="header-actions" style={{ gap: '8px' }}>
-          <span className="tag-badge" style={{ height: '24px', padding: '0 9px', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
-            Slots: <strong style={{ color: 'var(--text-heading)' }}>{harnessConfig.activeSlots || 0}/{harnessConfig.maxConcurrentTasks || 2}</strong>
-            {(harnessConfig.queuedTasks || 0) > 0 && <span style={{ color: '#f59e0b' }}> (+{harnessConfig.queuedTasks} queued)</span>}
+        <div className="header-actions gap-2">
+          <span className="tag-badge h-6 px-2.5 font-mono text-[11px]">
+            Slots: <strong className="text-ink-heading">{harnessConfig.activeSlots || 0}/{harnessConfig.maxConcurrentTasks || 2}</strong>
+            {(harnessConfig.queuedTasks || 0) > 0 && <span className="text-warning"> (+{harnessConfig.queuedTasks} queued)</span>}
           </span>
-          <span className="tag-badge" style={{ height: '24px', padding: '0 9px', fontSize: '11px' }}>
-            Host: <strong style={{ color: 'var(--text-heading)' }}>{systemEnv?.platformName || 'Local Environment'}</strong>
+          <span className="tag-badge h-6 px-2.5 text-[11px]">
+            Host: <strong className="text-ink-heading">{systemEnv?.platformName || 'Local Environment'}</strong>
           </span>
         </div>
       </div>
 
-      <div style={{ flex: 1, padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-6">
         {!canConfigure && (
-          <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', padding: '12px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px', color: '#f87171' }}>
-            <Lock size={16} style={{ flexShrink: 0 }} />
+          <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-danger">
+            <Lock size={16} className="shrink-0" />
             <div>
-              <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-heading)' }}>Read-Only Daemon & Workspace Policy</strong>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+              <strong className="block text-[13px] text-ink-heading">Read-Only Daemon & Workspace Policy</strong>
+              <span className="text-xs text-ink-muted">
                 Signed in as <strong>{currentUser?.name}</strong> (User). You can create private Quick Actions, while Owners and Admins manage Harness policies, `SKILL.md` bundles, and CLI binaries.
               </span>
             </div>
@@ -247,11 +238,11 @@ export default function CLIAgentsHub({
         {activeSubTab === 'agents' && (
           <>
             {/* Multica v0.12.1 Harness Daemon Policy Panel */}
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', padding: '16px 20px', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', padding: '16px 20px', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '14px', boxShadow: 'var(--shadow-sm)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(94, 106, 210, 0.14)', border: '1px solid rgba(94, 106, 210, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Monitor size={18} color="#818cf8" />
+                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(37, 99, 235, 0.1)', border: '1px solid rgba(37, 99, 235, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Monitor size={18} color="#2563eb" />
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -263,7 +254,7 @@ export default function CLIAgentsHub({
                       </span>
                     </div>
                     <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '2px' }}>
-                      Slot-leased concurrency, 9-stage phase telemetry, idle/turn watchdogs, token stream redaction, and mid-run <code style={{ background: 'rgba(255,255,255,0.06)', padding: '1px 5px', borderRadius: '4px', color: 'var(--text-heading)' }}>--steer</code> supplements.
+                      Slot-leased concurrency, 9-stage phase telemetry, idle/turn watchdogs, token stream redaction, and mid-run <code style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', padding: '1px 5px', borderRadius: '4px', color: 'var(--text-heading)' }}>--steer</code> supplements.
                     </p>
                   </div>
                 </div>
@@ -285,7 +276,7 @@ export default function CLIAgentsHub({
                     disabled={!canConfigure}
                     value={harnessConfig.maxConcurrentTasks || 2}
                     onChange={(e) => onUpdateHarnessConfig?.({ maxConcurrentTasks: Number(e.target.value) })}
-                    style={{ width: '100%', height: '28px', background: 'var(--bg-surface)', color: 'var(--text-heading)', border: '1px solid var(--border-color)', borderRadius: '5px', padding: '0 8px', fontSize: '12px' }}
+                    style={{ width: '100%', height: '28px', background: 'var(--bg-chat-input)', color: 'var(--text-heading)', border: '1px solid var(--border-color)', borderRadius: '5px', padding: '0 8px', fontSize: '12px' }}
                   >
                     {[1, 2, 3, 4, 6, 8].map(n => (
                       <option key={n} value={n}>{n} parallel {n === 1 ? 'task' : 'tasks'}</option>
@@ -301,7 +292,7 @@ export default function CLIAgentsHub({
                     disabled={!canConfigure}
                     value={harnessConfig.isolationMode || 'in-place'}
                     onChange={(e) => onUpdateHarnessConfig?.({ isolationMode: e.target.value })}
-                    style={{ width: '100%', height: '28px', background: 'var(--bg-surface)', color: 'var(--text-heading)', border: '1px solid var(--border-color)', borderRadius: '5px', padding: '0 8px', fontSize: '12px' }}
+                    style={{ width: '100%', height: '28px', background: 'var(--bg-chat-input)', color: 'var(--text-heading)', border: '1px solid var(--border-color)', borderRadius: '5px', padding: '0 8px', fontSize: '12px' }}
                   >
                     <option value="in-place">In-Place Workspace</option>
                     <option value="worktree">Isolated Git Worktree</option>
@@ -316,7 +307,7 @@ export default function CLIAgentsHub({
                     disabled={!canConfigure}
                     value={harnessConfig.idleWatchdogSeconds || 90}
                     onChange={(e) => onUpdateHarnessConfig?.({ idleWatchdogSeconds: Number(e.target.value) })}
-                    style={{ width: '100%', height: '28px', background: 'var(--bg-surface)', color: 'var(--text-heading)', border: '1px solid var(--border-color)', borderRadius: '5px', padding: '0 8px', fontSize: '12px' }}
+                    style={{ width: '100%', height: '28px', background: 'var(--bg-chat-input)', color: 'var(--text-heading)', border: '1px solid var(--border-color)', borderRadius: '5px', padding: '0 8px', fontSize: '12px' }}
                   >
                     <option value={45}>45 seconds</option>
                     <option value={90}>90 seconds</option>
@@ -348,7 +339,7 @@ export default function CLIAgentsHub({
                         onChange={(e) => onUpdateHarnessConfig?.({ autoSteerActiveRuns: e.target.checked })}
                         style={{ accentColor: 'var(--accent-primary)' }}
                       />
-                      <Compass size={11} color="#818cf8" /> Auto-Steer
+                      <Compass size={11} color="#2563eb" /> Auto-Steer
                     </label>
                   </div>
                 </div>
@@ -415,9 +406,9 @@ export default function CLIAgentsHub({
                                 title={canConfigure ? 'Click to bind/unbind skill from agent runtime brief' : sk.description}
                                 style={{
                                   cursor: canConfigure ? 'pointer' : 'default',
-                                  background: bound ? 'rgba(94, 106, 210, 0.16)' : 'rgba(255,255,255,0.03)',
-                                  color: bound ? '#a5b4fc' : 'var(--text-muted)',
-                                  borderColor: bound ? 'rgba(94, 106, 210, 0.35)' : 'var(--border-subtle)'
+                                  background: bound ? 'rgba(37, 99, 235, 0.12)' : 'var(--bg-surface)',
+                                  color: bound ? '#2563eb' : 'var(--text-muted)',
+                                  borderColor: bound ? 'rgba(37, 99, 235, 0.3)' : 'var(--border-subtle)'
                                 }}
                               >
                                 {bound && <Check size={9.5} />}
@@ -442,7 +433,7 @@ export default function CLIAgentsHub({
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                               <span style={{ color: 'var(--text-muted)', flexShrink: 0 }}>Binary</span>
-                              <code style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-subtle)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-normal)', fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '210px' }}>
+                              <code style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-normal)', fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '210px' }}>
                                 {a.cliCommand}
                               </code>
                             </div>
@@ -461,7 +452,7 @@ export default function CLIAgentsHub({
                               <select 
                                 value={cliEngine} 
                                 onChange={(e) => setCliEngine(e.target.value)}
-                                style={{ width: '100%', height: '32px', background: 'var(--bg-surface)', color: 'var(--text-heading)', border: '1px solid var(--border-color)', padding: '0 10px', borderRadius: '6px', fontSize: '12px' }}
+                                style={{ width: '100%', height: '32px', background: 'var(--bg-chat-input)', color: 'var(--text-heading)', border: '1px solid var(--border-color)', padding: '0 10px', borderRadius: '6px', fontSize: '12px' }}
                               >
                                 <option value="Antigravity CLI">Antigravity CLI (agy)</option>
                                 <option value="Claude Code">Claude Code (claude)</option>
@@ -529,7 +520,7 @@ export default function CLIAgentsHub({
                       )}
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: a.status === 'busy' ? '#818cf8' : '#10b981' }} />
+                        <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: a.status === 'busy' ? '#2563eb' : '#10b981' }} />
                         <span style={{ fontSize: '11.5px', color: 'var(--text-muted)', textTransform: 'capitalize', fontWeight: 500 }}>
                           {a.status}
                         </span>
@@ -569,8 +560,8 @@ export default function CLIAgentsHub({
                         padding: '10px 11px',
                         borderRadius: '7px',
                         cursor: 'pointer',
-                        background: active ? 'rgba(94, 106, 210, 0.14)' : 'var(--bg-darkest)',
-                        border: `1px solid ${active ? 'rgba(94, 106, 210, 0.38)' : 'var(--border-subtle)'}`
+                        background: active ? 'rgba(37, 99, 235, 0.1)' : 'var(--bg-darkest)',
+                        border: `1px solid ${active ? 'rgba(37, 99, 235, 0.35)' : 'var(--border-subtle)'}`
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
@@ -582,7 +573,7 @@ export default function CLIAgentsHub({
                       <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.35 }}>
                         {sk.description || 'Reusable SKILL.md bundle'}
                       </div>
-                      <div style={{ fontSize: '10.5px', color: '#818cf8', marginTop: '6px' }}>
+                      <div style={{ fontSize: '10.5px', color: '#2563eb', marginTop: '6px' }}>
                         Bound to {(sk.boundAgentIds || []).length} agent{(sk.boundAgentIds || []).length === 1 ? '' : 's'}
                       </div>
                     </div>
@@ -613,7 +604,7 @@ export default function CLIAgentsHub({
                           <button
                             type="button"
                             className="btn btn-secondary"
-                            style={{ height: '28px', color: '#f87171' }}
+                            style={{ height: '28px', color: '#dc2626' }}
                             onClick={() => onDeleteSkill?.(selectedSkill.id)}
                           >
                             <Trash2 size={12} /> Delete
@@ -679,7 +670,7 @@ export default function CLIAgentsHub({
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '10px', overflow: 'hidden' }}>
               <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Zap size={14} color="#818cf8" />
+                  <Zap size={14} color="#2563eb" />
                   <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-heading)' }}>
                     Saved Quick Actions ({visibleQuickActions.length})
                   </span>
@@ -727,7 +718,7 @@ export default function CLIAgentsHub({
                         <button
                           type="button"
                           className="btn btn-secondary"
-                          style={{ height: '26px', padding: '0 8px', color: '#f87171' }}
+                          style={{ height: '26px', padding: '0 8px', color: '#dc2626' }}
                           onClick={() => onDeleteQuickAction?.(qa.id)}
                         >
                           <Trash2 size={11.5} />
@@ -807,10 +798,10 @@ export default function CLIAgentsHub({
         {/* TAB 4: GITHUB & VERCEL CLOUD SHIPPING */}
         {activeSubTab === 'shipping' && (
           <>
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', padding: '16px 20px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', padding: '16px 20px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', boxShadow: 'var(--shadow-sm)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(94, 106, 210, 0.14)', border: '1px solid rgba(94, 106, 210, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Rocket size={18} color="#818cf8" />
+                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(37, 99, 235, 0.1)', border: '1px solid rgba(37, 99, 235, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Rocket size={18} color="#2563eb" />
                 </div>
                 <div>
                   <h2 style={{ color: 'var(--text-heading)', fontSize: '14px', fontWeight: 600, margin: 0 }}>
@@ -844,8 +835,8 @@ export default function CLIAgentsHub({
                 <div>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: 'rgba(94, 106, 210, 0.14)', border: '1px solid rgba(94, 106, 210, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <GitPullRequest size={18} color="#818cf8" />
+                      <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: 'rgba(37, 99, 235, 0.1)', border: '1px solid rgba(37, 99, 235, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <GitPullRequest size={18} color="#2563eb" />
                       </div>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -879,7 +870,7 @@ export default function CLIAgentsHub({
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <span style={{ color: 'var(--text-muted)' }}>Repository</span>
-                          <code style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-subtle)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-heading)', fontSize: '11.5px' }}>
+                          <code style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-heading)', fontSize: '11.5px' }}>
                             {github.repoPath || 'josecarlospm/tandem-dev'}
                           </code>
                         </div>
@@ -960,7 +951,7 @@ export default function CLIAgentsHub({
                 <div>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.06)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Globe size={18} color="var(--text-heading)" />
                       </div>
                       <div>
@@ -1002,13 +993,13 @@ export default function CLIAgentsHub({
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <span style={{ color: 'var(--text-muted)' }}>Vercel Project</span>
-                          <code style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-subtle)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-heading)', fontSize: '11.5px' }}>
+                          <code style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-heading)', fontSize: '11.5px' }}>
                             {vercel.projectName || 'Unlinked'}
                           </code>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <span style={{ color: 'var(--text-muted)' }}>Production Domain</span>
-                          <span style={{ color: vercel.productionDomain ? '#38bdf8' : 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11.5px' }}>
+                          <span style={{ color: vercel.productionDomain ? '#0284c7' : 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11.5px' }}>
                             {vercel.productionDomain || 'Configure owned domain'}
                           </span>
                         </div>
@@ -1137,9 +1128,9 @@ export default function CLIAgentsHub({
                             <span 
                               className="tag-badge" 
                               style={{ 
-                                background: dep.environment === 'Production' ? 'rgba(94, 106, 210, 0.15)' : 'rgba(255,255,255,0.04)',
-                                color: dep.environment === 'Production' ? '#a5b4fc' : 'var(--text-muted)',
-                                borderColor: dep.environment === 'Production' ? 'rgba(94, 106, 210, 0.3)' : 'var(--border-color)'
+                                background: dep.environment === 'Production' ? 'rgba(37, 99, 235, 0.1)' : 'var(--bg-surface)',
+                                color: dep.environment === 'Production' ? '#2563eb' : 'var(--text-muted)',
+                                borderColor: dep.environment === 'Production' ? 'rgba(37, 99, 235, 0.25)' : 'var(--border-color)'
                               }}
                             >
                               {dep.environment}
@@ -1150,7 +1141,7 @@ export default function CLIAgentsHub({
                               <GitBranch size={11} /> {dep.branch} ({dep.commitSha})
                             </span>
                             {dep.githubPrNumber && (
-                              <a href={dep.githubPrUrl} target="_blank" rel="noreferrer" style={{ color: '#818cf8', textDecoration: 'none' }}>
+                              <a href={dep.githubPrUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>
                                 GitHub PR {dep.githubPrNumber}
                               </a>
                             )}

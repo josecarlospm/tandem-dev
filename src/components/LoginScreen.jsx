@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layers, LogIn, Eye, EyeOff, AlertCircle, Zap, Shield, Users, Bot, Crown, User } from 'lucide-react';
+import { Layers, LogIn, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 export default function LoginScreen({ onLogin, errorMessage }) {
   const [email, setEmail] = useState('');
@@ -18,34 +18,15 @@ export default function LoginScreen({ onLogin, errorMessage }) {
 
   return (
     <div className="login-screen">
-      {/* Main Login Card */}
       <div className="login-card">
-        {/* Logo & Brand */}
         <div className="login-brand">
           <div className="login-logo">
             <Layers size={20} />
           </div>
           <h1 className="login-title">Tandem</h1>
-          <p className="login-subtitle">Humans & AI Coding Agents as One Team</p>
+          <p className="login-subtitle">Humans and AI coding agents as one team</p>
         </div>
 
-        {/* Feature Pills */}
-        <div className="login-features">
-          <span className="login-feature-pill">
-            <Bot size={11} /> CLI Agents
-          </span>
-          <span className="login-feature-pill">
-            <Shield size={11} /> RBAC
-          </span>
-          <span className="login-feature-pill">
-            <Users size={11} /> Channels
-          </span>
-          <span className="login-feature-pill">
-            <Zap size={11} /> Task Board
-          </span>
-        </div>
-
-        {/* Error Toast */}
         {errorMessage && (
           <div className="login-error">
             <AlertCircle size={15} />
@@ -53,14 +34,13 @@ export default function LoginScreen({ onLogin, errorMessage }) {
           </div>
         )}
 
-        {/* Login Form */}
         <form onSubmit={handleSubmit} className="login-form">
           <div className="login-field">
-            <label htmlFor="login-email">Email Address</label>
+            <label htmlFor="login-email">Email address</label>
             <input
               id="login-email"
               type="email"
-              placeholder="name@vibecoding.io"
+              placeholder="name@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -86,6 +66,7 @@ export default function LoginScreen({ onLogin, errorMessage }) {
                 className="login-eye-btn"
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
@@ -98,33 +79,29 @@ export default function LoginScreen({ onLogin, errorMessage }) {
             disabled={loading || !email.trim() || !password.trim()}
           >
             <LogIn size={15} />
-            <span>{loading ? 'Signing in...' : 'Sign In'}</span>
+            <span>{loading ? 'Signing in…' : 'Sign in'}</span>
           </button>
         </form>
 
-        {/* Hint Toggle */}
         <div className="login-hint-section">
           <button
             type="button"
             className="login-hint-toggle"
             onClick={() => setShowHint(!showHint)}
           >
-            {showHint ? 'Hide bootstrap help' : 'First-time setup & RBAC info'}
+            {showHint ? 'Hide setup help' : 'First-time setup help'}
           </button>
 
           {showHint && (
             <div className="login-hint-box">
-              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                On initial launch, Tandem reads <code>TANDEM_OWNER_EMAIL</code> and <code>TANDEM_INITIAL_PASSWORD</code> from <code>.env</code>, or prints a one-time generated bootstrap password to your local server console.
-              </div>
+              <p className="text-[11.5px] leading-relaxed text-ink-muted">
+                On first launch, Tandem reads <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">TANDEM_OWNER_EMAIL</code> and <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">TANDEM_INITIAL_PASSWORD</code> from <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">.env</code>, or prints a one-time bootstrap password to the server console.
+              </p>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="login-footer">
-          Role-Based Access Control · Local Session Auth
-        </div>
+        <p className="login-footer">Self-hosted collaborative engineering workspace</p>
       </div>
     </div>
   );

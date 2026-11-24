@@ -379,7 +379,7 @@ export default function App() {
   const handleCreateServer = (e) => {
     e.preventDefault();
     if (!newServerName.trim()) return;
-    sendWS('create_server', { name: newServerName, icon: 'Folder', color: '#8b5cf6' });
+    sendWS('create_server', { name: newServerName, icon: 'Folder', color: '#2563eb' });
     setNewServerName('');
     setShowAddServerModal(false);
   };
@@ -504,11 +504,11 @@ export default function App() {
   // --- RENDER: Auth Loading State ---
   if (authLoading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-root)', color: 'var(--text-normal)' }}>
-        <div style={{ textAlign: 'center' }}>
-          <Layers size={28} color="var(--accent-primary)" style={{ marginBottom: '12px', opacity: 0.9 }} />
-          <h2 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-heading)', letterSpacing: '-0.01em' }}>Restoring Session</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '12.5px', marginTop: '4px' }}>Authenticating with workspace services...</p>
+      <div className="flex h-screen items-center justify-center bg-canvas text-ink">
+        <div className="text-center">
+          <Layers size={28} className="mx-auto mb-3 text-accent opacity-90" />
+          <h2 className="text-[15px] font-semibold tracking-tight text-ink-heading">Restoring session</h2>
+          <p className="mt-1 text-[12.5px] text-ink-muted">Authenticating with workspace services…</p>
         </div>
       </div>
     );
@@ -522,11 +522,13 @@ export default function App() {
   // --- RENDER: Workspace Loading (Waiting for WS state) ---
   if (!state) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-root)', color: 'var(--text-normal)' }}>
-        <div style={{ textAlign: 'center' }}>
-          <Layers size={28} color="var(--accent-primary)" style={{ marginBottom: '12px', opacity: 0.9 }} />
-          <h2 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-heading)', letterSpacing: '-0.01em' }}>Loading Workspace</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '12.5px', marginTop: '4px' }}>Welcome back, <strong style={{ color: 'var(--text-heading)', fontWeight: 500 }}>{currentUser.name}</strong></p>
+      <div className="flex h-screen items-center justify-center bg-canvas text-ink">
+        <div className="text-center">
+          <Layers size={28} className="mx-auto mb-3 text-accent opacity-90" />
+          <h2 className="text-[15px] font-semibold tracking-tight text-ink-heading">Loading workspace</h2>
+          <p className="mt-1 text-[12.5px] text-ink-muted">
+            Welcome back, <strong className="font-medium text-ink-heading">{currentUser.name}</strong>
+          </p>
         </div>
       </div>
     );
@@ -536,30 +538,27 @@ export default function App() {
   const activeServer = state.servers.find(s => s.id === activeServerId) || state.servers[0];
   const activeServerCards = state.cards.filter(c => c.serverId === activeServerId || !c.serverId);
 
-  const getServerIconComponent = (iconName, isActive) => {
-    const iconColor = isActive ? '#ffffff' : 'currentColor';
-    if (iconName === 'Terminal') return <Terminal size={17} color={iconColor} />;
-    if (iconName === 'Layers') return <Layers size={17} color={iconColor} />;
-    if (iconName === 'Folder') return <Folder size={17} color={iconColor} />;
-    return <Sparkles size={17} color={iconColor} />;
+  const getServerIconComponent = (iconName) => {
+    if (iconName === 'Terminal') return <Terminal size={17} />;
+    if (iconName === 'Layers') return <Layers size={17} />;
+    if (iconName === 'Folder') return <Folder size={17} />;
+    return <Sparkles size={17} />;
   };
 
   return (
-    <div className="app-container" style={{ position: 'relative' }}>
-      {/* Global Error Toast Notification */}
+    <div className="app-container relative">
       {errorToast && (
-        <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 9999, background: '#18181c', color: 'var(--text-heading)', border: '1px solid rgba(239, 68, 68, 0.4)', padding: '10px 16px', borderRadius: '8px', boxShadow: 'var(--shadow-lg)', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12.5px', fontWeight: 500 }}>
-          <AlertTriangle size={15} color="var(--accent-danger)" />
+        <div className="absolute right-4 top-4 z-[9999] flex items-center gap-2.5 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-[12.5px] font-medium text-ink-heading shadow-modal">
+          <AlertTriangle size={15} className="text-danger" />
           <span>{errorToast}</span>
         </div>
       )}
 
-      {/* Workspace Switcher Rail */}
       <div className="server-dock">
         {state.servers.map(server => {
           const isActive = activeServerId === server.id;
           return (
-            <div 
+            <div
               key={server.id}
               className={`server-icon ${isActive ? 'active' : ''}`}
               title={server.name}
@@ -573,30 +572,26 @@ export default function App() {
                 }
               }}
             >
-              {getServerIconComponent(server.icon, isActive)}
+              {getServerIconComponent(server.icon)}
             </div>
           );
         })}
 
-        {/* Add Server Button */}
-        <div 
-          className="server-icon"
+        <div
+          className="server-icon border-dashed bg-transparent"
           title="Create New Workspace"
-          style={{ background: 'transparent', border: '1px dashed var(--border-strong)' }}
           onClick={() => setShowAddServerModal(true)}
         >
           <Plus size={16} />
         </div>
 
-        {/* Logout Button at bottom of dock */}
-        <div style={{ marginTop: 'auto' }}>
-          <div 
-            className="server-icon"
+        <div className="mt-auto">
+          <div
+            className="server-icon bg-transparent"
             title={`Sign Out (${currentUser.name})`}
-            style={{ background: 'transparent' }}
             onClick={handleLogout}
           >
-            <LogOut size={16} color="var(--text-muted)" />
+            <LogOut size={16} className="text-ink-muted" />
           </div>
         </div>
       </div>
@@ -722,27 +717,26 @@ export default function App() {
           />
         )}
 
-        {/* Create Server Modal */}
         {showAddServerModal && (
           <div className="task-drawer-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAddServerModal(false); }}>
-            <div style={{ background: '#141418', padding: '24px', borderRadius: '12px', width: '400px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}>
-              <h3 style={{ color: 'var(--text-heading)', fontSize: '15px', fontWeight: 600, marginBottom: '16px', letterSpacing: '-0.01em' }}>Create New Workspace</h3>
+            <div className="modal-panel w-[400px]">
+              <h3 className="mb-4 text-[15px] font-semibold tracking-tight text-ink-heading">Create new workspace</h3>
               <form onSubmit={handleCreateServer}>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Workspace Name</label>
-                  <input 
-                    type="text" 
-                    className="chat-input" 
-                    placeholder="e.g. Frontend Team, QA Automation..."
+                <div className="mb-4">
+                  <label className="mb-1.5 block text-[11.5px] font-semibold text-ink-muted">Workspace name</label>
+                  <input
+                    type="text"
+                    className="chat-input"
+                    placeholder="e.g. Frontend Team, QA Automation…"
                     value={newServerName}
                     onChange={(e) => setNewServerName(e.target.value)}
                     required
                     autoFocus
                   />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <div className="flex justify-end gap-2">
                   <button type="button" className="btn btn-secondary" onClick={() => setShowAddServerModal(false)}>Cancel</button>
-                  <button type="submit" className="btn btn-primary">Create Workspace</button>
+                  <button type="submit" className="btn btn-primary">Create workspace</button>
                 </div>
               </form>
             </div>

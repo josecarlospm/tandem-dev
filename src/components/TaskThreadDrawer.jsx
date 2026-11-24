@@ -254,8 +254,8 @@ export default function TaskThreadDrawer({
     switch (layerType) {
       case 'init': return { color: '#38bdf8', label: 'INIT' };
       case 'phase': return { color: '#38bdf8', label: 'PHASE' };
-      case 'steer': return { color: '#c084fc', label: 'STEER' };
-      case 'prompt': return { color: '#818cf8', label: 'BRIEF' };
+      case 'steer': return { color: '#7c3aed', label: 'STEER' };
+      case 'prompt': return { color: '#2563eb', label: 'BRIEF' };
       case 'stdout': return { color: '#10b981', label: 'STREAM' };
       case 'tool': return { color: '#f59e0b', label: 'TOOL' };
       case 'stderr': return { color: '#ef4444', label: 'STDERR' };
@@ -271,22 +271,11 @@ export default function TaskThreadDrawer({
       {/* Centered Card Modal */}
       <div 
         onClick={(e) => e.stopPropagation()}
-        style={{ 
-          background: 'var(--bg-main)', 
-          borderRadius: '12px', 
-          width: '860px', 
-          maxWidth: '95vw', 
-          maxHeight: '91vh', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          boxShadow: 'var(--shadow-lg)', 
-          border: '1px solid var(--border-color)', 
-          overflow: 'hidden', 
-          animation: 'popupSlide 0.16s cubic-bezier(0.16, 1, 0.3, 1)' 
-        }}
+        className="flex w-[860px] max-w-[95vw] max-h-[91vh] flex-col overflow-hidden rounded-xl border border-line bg-white shadow-modal"
+        style={{ animation: 'popupSlide 0.16s cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
         {/* Modal Header */}
-        <div style={{ padding: '18px 24px 16px', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-sidebar)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
+        <div className="flex items-start justify-between gap-4 border-b border-line bg-surface-muted px-6 py-4">
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
               <CreditCard size={16} color="var(--text-muted)" />
@@ -299,7 +288,7 @@ export default function TaskThreadDrawer({
                   <span>{card.title}</span>
                   <Edit3 size={13} color="var(--text-muted)" style={{ opacity: 0.6 }} />
                   {isExecuting && (
-                    <Loader2 size={14} color="#818cf8" style={{ animation: 'spin 1.5s linear infinite' }} />
+                    <Loader2 size={14} className="text-accent" style={{ animation: 'spin 1.5s linear infinite' }} />
                   )}
                 </h2>
               ) : (
@@ -326,7 +315,7 @@ export default function TaskThreadDrawer({
                 <select 
                   value={card.columnId} 
                   onChange={(e) => onMoveCard(card.id, e.target.value)}
-                  style={{ background: 'var(--bg-surface)', color: 'var(--text-heading)', border: '1px solid var(--border-color)', padding: '3px 8px', borderRadius: '5px', fontSize: '11.5px', fontWeight: 500 }}
+                  className="rounded border border-line bg-white px-2 py-0.5 text-[11.5px] font-medium text-ink-heading"
                 >
                   {columns.map(c => (
                     <option key={c.id} value={c.id}>{c.title}</option>
@@ -342,8 +331,7 @@ export default function TaskThreadDrawer({
                 <button
                   type="button"
                   onClick={() => setShowRunHistory(!showRunHistory)}
-                  className="tag-badge"
-                  style={{ cursor: 'pointer', background: showRunHistory ? 'rgba(94, 106, 210, 0.16)' : 'rgba(255,255,255,0.04)', color: showRunHistory ? '#a5b4fc' : 'var(--text-muted)' }}
+                  className={`tag-badge cursor-pointer ${showRunHistory ? 'border-accent-mid bg-accent-soft text-accent' : 'bg-surface-muted text-ink-muted'}`}
                 >
                   <History size={10} />
                   <span>{runHistory.length} run{runHistory.length === 1 ? '' : 's'}</span>
@@ -358,24 +346,24 @@ export default function TaskThreadDrawer({
         </div>
 
         {/* Modal Scrollable Body (2 Columns) */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'grid', gridTemplateColumns: '1fr 248px', gap: '24px' }}>
+        <div className="grid flex-1 grid-cols-[1fr_248px] gap-6 overflow-y-auto p-6">
           
           {/* Left Main Column */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', minWidth: 0 }}>
+          <div className="flex min-w-0 flex-col gap-[18px]">
             
             {/* Multica v0.12.1 Live Harness Execution & Steering Banner */}
             {isExecuting && (
-              <div style={{ background: 'var(--bg-surface)', border: '1px solid rgba(94, 106, 210, 0.38)', borderRadius: '9px', padding: '13px 14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="flex flex-col gap-2.5 rounded-lg border border-accent-mid bg-accent-soft p-3.5">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Loader2 size={16} color="#818cf8" style={{ animation: 'spin 1.5s linear infinite', flexShrink: 0 }} />
+                    <Loader2 size={16} className="text-accent" style={{ animation: 'spin 1.5s linear infinite', flexShrink: 0 }} />
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap' }}>
                         <span style={{ color: 'var(--text-heading)', fontSize: '12.5px', fontWeight: 600 }}>
                           {activeRun?.status === 'queued' ? 'Queued for Execution Slot' : 'Harness Run in Progress'}
                         </span>
                         {activeRun?.runId && (
-                          <span className="tag-badge" style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', background: 'rgba(94, 106, 210, 0.16)', color: '#a5b4fc', borderColor: 'rgba(94, 106, 210, 0.32)' }}>
+                          <span className="tag-badge" style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', background: 'rgba(37, 99, 235, 0.1)', color: '#2563eb', borderColor: 'rgba(37, 99, 235, 0.25)' }}>
                             {activeRun.runId}
                           </span>
                         )}
@@ -385,13 +373,13 @@ export default function TaskThreadDrawer({
                           </span>
                         )}
                         {activeRun?.supplementsCount > 0 && (
-                          <span className="tag-badge" style={{ fontSize: '10px', background: 'rgba(192, 132, 252, 0.14)', color: '#d8b4fe', borderColor: 'rgba(192, 132, 252, 0.3)' }}>
+                          <span className="tag-badge" style={{ fontSize: '10px', background: 'rgba(37, 99, 235, 0.1)', color: '#2563eb', borderColor: 'rgba(37, 99, 235, 0.25)' }}>
                             Steered {activeRun.supplementsCount}/3
                           </span>
                         )}
                       </div>
                       <p style={{ color: 'var(--text-muted)', fontSize: '11.5px', marginTop: '2px' }}>
-                        {assignedAgent?.name} via <code style={{ color: 'var(--text-heading)', background: 'rgba(255,255,255,0.06)', padding: '1px 5px', borderRadius: '4px' }}>{assignedAgent?.cliEngine}</code>
+                        {assignedAgent?.name} via <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">{assignedAgent?.cliEngine}</code>
                         {activeRun?.pid ? ` · PID ${activeRun.pid}` : ''}
                       </p>
                     </div>
@@ -399,8 +387,7 @@ export default function TaskThreadDrawer({
 
                   <button
                     type="button"
-                    className="btn btn-secondary"
-                    style={{ height: '27px', padding: '0 10px', fontSize: '11.5px', color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                    className="btn btn-secondary h-[27px] border-red-200 px-2.5 text-[11.5px] text-danger"
                     onClick={() => onCancelCardRun?.(card.id)}
                     title="Stop active run safely (terminates exact child PID tree)"
                   >
@@ -421,7 +408,7 @@ export default function TaskThreadDrawer({
                             padding: '4px 3px',
                             borderRadius: '5px',
                             textAlign: 'center',
-                            background: done ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255,255,255,0.03)',
+                            background: done ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-main)',
                             border: `1px solid ${done ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-subtle)'}`,
                             fontSize: '9.5px',
                             fontFamily: 'var(--font-mono)',
@@ -462,19 +449,19 @@ export default function TaskThreadDrawer({
 
             {/* Classified Failure Diagnostic Banner (pkg/taskfailure/classify.go) */}
             {!isExecuting && card.lastFailure && (
-              <div style={{ background: 'rgba(239, 68, 68, 0.06)', border: '1px solid rgba(239, 68, 68, 0.28)', borderRadius: '8px', padding: '11px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5">
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', flex: 1, minWidth: '220px' }}>
-                  <AlertTriangle size={15} color="#f87171" style={{ marginTop: '2px', flexShrink: 0 }} />
+                  <AlertTriangle size={15} className="text-danger" style={{ marginTop: '2px', flexShrink: 0 }} />
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-heading)' }}>
                         {card.lastFailure.label}
                       </span>
-                      <span className="tag-badge" style={{ height: '18px', fontSize: '10px', fontFamily: 'var(--font-mono)', background: 'rgba(239, 68, 68, 0.12)', color: '#fca5a5', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+                      <span className="tag-badge" style={{ height: '18px', fontSize: '10px', fontFamily: 'var(--font-mono)', background: 'rgba(239, 68, 68, 0.12)', color: '#dc2626', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
                         {card.lastFailure.code}
                       </span>
                       {card.lastFailure.retryable && (
-                        <span className="tag-badge" style={{ height: '18px', fontSize: '10px', background: 'rgba(245, 158, 11, 0.12)', color: '#fcd34d', borderColor: 'rgba(245, 158, 11, 0.3)' }}>
+                        <span className="tag-badge" style={{ height: '18px', fontSize: '10px', background: 'rgba(245, 158, 11, 0.12)', color: '#d97706', borderColor: 'rgba(245, 158, 11, 0.3)' }}>
                           Retryable
                         </span>
                       )}
@@ -498,7 +485,7 @@ export default function TaskThreadDrawer({
 
             {/* Collapsible Run History Timeline (multica issue runs) */}
             {showRunHistory && runHistory.length > 0 && (
-              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '12px 14px' }}>
+              <div className="rounded-lg border border-line bg-surface-muted px-3.5 py-3">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <History size={13} color="var(--text-muted)" /> Harness Execution Runs ({runHistory.length})
@@ -509,7 +496,7 @@ export default function TaskThreadDrawer({
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '160px', overflowY: 'auto' }}>
                   {runHistory.map((r) => (
-                    <div key={r.runId} style={{ background: 'var(--bg-main)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '8px 10px', fontSize: '11.5px' }}>
+                    <div key={r.runId} className="rounded-md border border-line-soft bg-white px-2.5 py-2 text-[11.5px]">
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                           <code style={{ color: 'var(--text-heading)', fontSize: '11px' }}>{r.runId}</code>
@@ -517,7 +504,7 @@ export default function TaskThreadDrawer({
                             height: '17px',
                             fontSize: '9.5px',
                             background: r.status === 'completed' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-                            color: r.status === 'completed' ? '#10b981' : '#f87171',
+                            color: r.status === 'completed' ? '#059669' : '#dc2626',
                             borderColor: r.status === 'completed' ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'
                           }}>
                             {r.status}
@@ -574,22 +561,8 @@ export default function TaskThreadDrawer({
                 {showTagPicker && (
                   <div 
                     ref={tagPickerRef}
-                    style={{ 
-                      position: 'absolute',
-                      top: 'calc(100% + 6px)',
-                      left: 0,
-                      width: '264px',
-                      background: 'var(--bg-secondary)',
-                      border: '1px solid var(--border-strong)',
-                      borderRadius: '8px',
-                      padding: '12px',
-                      boxShadow: 'var(--shadow-lg)',
-                      zIndex: 500,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '10px',
-                      animation: 'popupSlide 0.14s ease-out'
-                    }}
+                    className="absolute left-0 top-[calc(100%+6px)] z-[500] flex w-[264px] flex-col gap-2.5 rounded-lg border border-line-strong bg-white p-3 shadow-modal"
+                    style={{ animation: 'popupSlide 0.14s ease-out' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
@@ -613,14 +586,8 @@ export default function TaskThreadDrawer({
                           <button
                             key={tag}
                             type="button"
-                            className="tag-badge"
                             onClick={() => handleToggleTag(tag)}
-                            style={{
-                              background: isSelected ? 'var(--accent-primary)' : 'rgba(255,255,255,0.04)',
-                              color: isSelected ? '#fff' : 'var(--text-normal)',
-                              borderColor: isSelected ? 'rgba(255,255,255,0.2)' : 'var(--border-color)',
-                              cursor: 'pointer'
-                            }}
+                            className={`tag-badge cursor-pointer ${isSelected ? 'border-accent bg-accent text-white' : 'border-line bg-surface-muted text-ink'}`}
                           >
                             {isSelected && <Check size={9.5} />}
                             <span>{tag}</span>
@@ -658,7 +625,7 @@ export default function TaskThreadDrawer({
                   Assigned Agent & Skills
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'var(--bg-surface)', border: '1px solid var(--border-color)', padding: '4px 9px', borderRadius: '6px' }}>
+                  <div className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-2 py-1">
                     <img src={assignedAgent?.avatar} alt={assignedAgent?.name} className="avatar-img" style={{ width: '18px', height: '18px' }} />
                     <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-heading)' }}>
                       {assignedAgent?.name}
@@ -693,7 +660,7 @@ export default function TaskThreadDrawer({
               </div>
 
               {!isEditingDesc ? (
-                <div style={{ fontSize: '13px', lineHeight: 1.55, color: 'var(--text-normal)', background: 'var(--bg-surface)', padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <div className="rounded-lg border border-line bg-surface-muted px-3.5 py-3 text-[13px] leading-relaxed text-ink">
                   <MarkdownRenderer content={card.description || 'No description provided for this task.'} agents={agents} users={users} />
                 </div>
               ) : (
@@ -717,18 +684,18 @@ export default function TaskThreadDrawer({
             </div>
 
             {/* Checklist / Sub-tasks Section */}
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '14px' }}>
+            <div className="rounded-lg border border-line bg-surface-muted p-3.5">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <CheckSquare size={14} color="var(--text-muted)" /> Sub-tasks ({completedSubtasks}/{subtasks.length})
                 </span>
-                <span style={{ fontSize: '11px', fontWeight: 600, color: subtaskProgress === 100 ? '#10b981' : 'var(--text-muted)' }}>
+                <span className={`text-[11px] font-semibold ${subtaskProgress === 100 ? 'text-success' : 'text-ink-muted'}`}>
                   {subtaskProgress}%
                 </span>
               </div>
 
-              <div style={{ height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '999px', marginBottom: '12px', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${subtaskProgress}%`, background: '#10b981', transition: 'width 0.25s ease-out' }} />
+              <div className="mb-3 h-1 overflow-hidden rounded-full bg-surface-sunken">
+                <div className="h-full bg-success transition-all duration-200" style={{ width: `${subtaskProgress}%` }} />
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '10px' }}>
@@ -738,7 +705,7 @@ export default function TaskThreadDrawer({
                   </div>
                 ) : (
                   subtasks.map(st => (
-                    <div key={st.id} style={{ display: 'flex', alignItems: 'center', gap: '9px', padding: '6px 8px', background: 'var(--bg-main)', border: '1px solid var(--border-subtle)', borderRadius: '6px' }}>
+                    <div key={st.id} className="flex items-center gap-2 rounded-md border border-line-soft bg-white px-2 py-1.5">
                       <input
                         type="checkbox"
                         checked={st.completed}
@@ -787,7 +754,7 @@ export default function TaskThreadDrawer({
             </div>
 
             {/* GitHub & Vercel Release Pipeline Section */}
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '14px' }}>
+            <div className="rounded-lg border border-line bg-surface-muted p-3.5">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
                 <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Rocket size={14} color="var(--text-muted)" /> Release & Shipping (GitHub + Vercel)
@@ -800,11 +767,11 @@ export default function TaskThreadDrawer({
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 {/* GitHub PR Box */}
-                <div style={{ background: 'var(--bg-main)', border: '1px solid var(--border-subtle)', borderRadius: '7px', padding: '10px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px' }}>
+                <div className="flex flex-col justify-between gap-2 rounded-md border border-line-soft bg-white px-3 py-2.5">
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                       <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-heading)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                        <GitPullRequest size={12} color="#818cf8" /> GitHub PR
+                        <GitPullRequest size={12} className="text-accent" /> GitHub PR
                       </span>
                       {card.shipping?.githubPR ? (
                         <span 
@@ -812,9 +779,9 @@ export default function TaskThreadDrawer({
                           style={{
                             height: '18px',
                             fontSize: '10px',
-                            background: card.shipping.githubPR.status === 'merged' ? 'rgba(139, 92, 246, 0.14)' : 'rgba(16, 185, 129, 0.12)',
-                            color: card.shipping.githubPR.status === 'merged' ? '#c4b5fd' : '#10b981',
-                            borderColor: card.shipping.githubPR.status === 'merged' ? 'rgba(139, 92, 246, 0.3)' : 'rgba(16, 185, 129, 0.25)'
+                            background: card.shipping.githubPR.status === 'merged' ? 'rgba(37, 99, 235, 0.1)' : 'rgba(16, 185, 129, 0.12)',
+                            color: card.shipping.githubPR.status === 'merged' ? '#2563eb' : '#059669',
+                            borderColor: card.shipping.githubPR.status === 'merged' ? 'rgba(37, 99, 235, 0.25)' : 'rgba(16, 185, 129, 0.25)'
                           }}
                         >
                           {card.shipping.githubPR.number} · {card.shipping.githubPR.status === 'merged' ? 'Merged' : (card.shipping.githubPR.checksStatus === 'running' ? 'Checks Running' : 'Checks Passed')}
@@ -873,11 +840,11 @@ export default function TaskThreadDrawer({
                 </div>
 
                 {/* Vercel Deployment Box */}
-                <div style={{ background: 'var(--bg-main)', border: '1px solid var(--border-subtle)', borderRadius: '7px', padding: '10px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px' }}>
+                <div className="flex flex-col justify-between gap-2 rounded-md border border-line-soft bg-white px-3 py-2.5">
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                       <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-heading)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                        <Globe size={12} color="#38bdf8" /> Vercel Edge
+                        <Globe size={12} className="text-sky-600" /> Vercel Edge
                       </span>
                       {card.shipping?.vercelDeploy ? (
                         <span 
@@ -950,7 +917,7 @@ export default function TaskThreadDrawer({
                   const color = isAgent ? (agent?.color) : (user?.color || 'var(--text-heading)');
 
                   return (
-                    <div key={cm.id} style={{ display: 'flex', gap: '10px', background: 'var(--bg-surface)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <div key={cm.id} className="flex gap-2.5 rounded-lg border border-line bg-surface-muted px-3 py-2.5">
                       <img src={avatar} alt={senderName} className="avatar-img" style={{ width: '28px', height: '28px' }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px', flexWrap: 'wrap' }}>
@@ -961,7 +928,7 @@ export default function TaskThreadDrawer({
                             </span>
                           )}
                           {cm.steeredRunId && (
-                            <span className="tag-badge" style={{ height: '17px', fontSize: '9.5px', background: 'rgba(192, 132, 252, 0.14)', color: '#d8b4fe', borderColor: 'rgba(192, 132, 252, 0.3)' }}>
+                            <span className="tag-badge h-[17px] border-accent-mid bg-accent-soft text-[9.5px] text-accent">
                               <Compass size={9} /> steered {cm.steeredRunId}
                             </span>
                           )}
@@ -1030,14 +997,14 @@ export default function TaskThreadDrawer({
           </div>
 
           {/* Right Side Actions Column */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="flex flex-col gap-3.5">
             
             {/* Saved Quick Actions (Multica v0.12.1 MUL-9985) */}
             {visibleQuickActions.length > 0 && (
-              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '12px' }}>
+              <div className="rounded-lg border border-line bg-surface-muted p-3">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                    <Zap size={11.5} color="#818cf8" /> Quick Actions
+                    <Zap size={11.5} className="text-accent" /> Quick Actions
                   </span>
                   <button
                     type="button"
@@ -1059,7 +1026,7 @@ export default function TaskThreadDrawer({
                       onClick={() => onRunQuickAction?.(qa.id, card.id)}
                     >
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                        <Play size={10.5} color="#818cf8" />
+                        <Play size={10.5} className="text-accent" />
                         <span>{qa.name}</span>
                       </span>
                       {qa.visibility === 'private' && <Lock size={10} color="var(--text-muted)" />}
@@ -1093,7 +1060,7 @@ export default function TaskThreadDrawer({
             </div>
 
             {/* AI Execution Controls Section */}
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '12px' }}>
+            <div className="rounded-lg border border-line bg-surface-muted p-3">
               <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: '8px' }}>
                 Agent Dispatch
               </span>
@@ -1131,7 +1098,7 @@ export default function TaskThreadDrawer({
             </div>
 
             {/* Ship & Deploy Quick Controls */}
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '12px' }}>
+            <div className="rounded-lg border border-line bg-surface-muted p-3">
               <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: '8px' }}>
                 Ship Project
               </span>
@@ -1143,7 +1110,7 @@ export default function TaskThreadDrawer({
                   style={{ width: '100%', justifyContent: 'flex-start', fontSize: '11.5px' }}
                   onClick={() => onShipToGitHub?.(card.id)}
                 >
-                  <GitPullRequest size={12} color="#818cf8" />
+                  <GitPullRequest size={12} className="text-accent" />
                   <span>Push & Open GitHub PR</span>
                 </button>
 
@@ -1153,7 +1120,7 @@ export default function TaskThreadDrawer({
                   style={{ width: '100%', justifyContent: 'flex-start', fontSize: '11.5px' }}
                   onClick={() => onDeployToVercel?.(card.id, 'Preview')}
                 >
-                  <Globe size={12} color="#38bdf8" />
+                  <Globe size={12} className="text-sky-600" />
                   <span>Deploy Vercel Preview</span>
                 </button>
 
@@ -1173,14 +1140,14 @@ export default function TaskThreadDrawer({
             </div>
 
             {/* Live Execution Traces Section */}
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '12px' }}>
+            <div className="rounded-lg border border-line bg-surface-muted p-3">
               <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '8px' }}>
                 <Terminal size={12} /> Execution Traces ({layers.length})
               </span>
 
               <div className="terminal-window" style={{ maxHeight: '165px', overflowY: 'auto', fontSize: '11px' }}>
                 {layers.length === 0 ? (
-                  <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+                  <div className="text-[11px] text-slate-400">
                     No traces recorded yet.
                   </div>
                 ) : (

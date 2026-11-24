@@ -18,12 +18,15 @@ export default function MarkdownRenderer({ content, agents = [], users = [] }) {
       const codeStr = match[2];
 
       blocks.push(
-        <div key={`codeblock-${match.index}`} style={{ background: '#09090b', border: '1px solid var(--border-color)', borderRadius: '7px', padding: '10px 12px', margin: '8px 0', fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--text-heading)', overflowX: 'auto' }}>
-          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px', fontWeight: 600, letterSpacing: '0.04em', display: 'flex', justifyContent: 'space-between' }}>
+        <div
+          key={`codeblock-${match.index}`}
+          className="my-2 overflow-x-auto rounded-lg border border-line bg-surface-sunken px-3 py-2.5 font-mono text-[11.5px] text-ink-heading"
+        >
+          <div className="mb-1.5 flex justify-between border-b border-line-soft pb-1 text-[10px] font-semibold uppercase tracking-wide text-ink-muted">
             <span>{lang}</span>
             <span>CODE</span>
           </div>
-          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.45 }}>{codeStr}</pre>
+          <pre className="m-0 whitespace-pre-wrap break-words leading-[1.45]">{codeStr}</pre>
         </div>
       );
 
@@ -57,21 +60,36 @@ export default function MarkdownRenderer({ content, agents = [], users = [] }) {
       }
 
       if (trimmed.startsWith('# ')) {
-        elements.push(<h1 key={`${keyPrefix}-h1-${idx}`} style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-heading)', margin: '12px 0 6px 0', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px' }}>{parseInline(trimmed.replace(/^#\s+/, ''))}</h1>);
+        elements.push(
+          <h1 key={`${keyPrefix}-h1-${idx}`} className="mb-1.5 mt-3 border-b border-line-soft pb-1 text-base font-semibold text-ink-heading">
+            {parseInline(trimmed.replace(/^#\s+/, ''))}
+          </h1>
+        );
         return;
       }
       if (trimmed.startsWith('## ')) {
-        elements.push(<h2 key={`${keyPrefix}-h2-${idx}`} style={{ fontSize: '14.5px', fontWeight: 600, color: 'var(--text-heading)', margin: '10px 0 5px 0' }}>{parseInline(trimmed.replace(/^##\s+/, ''))}</h2>);
+        elements.push(
+          <h2 key={`${keyPrefix}-h2-${idx}`} className="mb-1.5 mt-2.5 text-[14.5px] font-semibold text-ink-heading">
+            {parseInline(trimmed.replace(/^##\s+/, ''))}
+          </h2>
+        );
         return;
       }
       if (trimmed.startsWith('### ')) {
-        elements.push(<h3 key={`${keyPrefix}-h3-${idx}`} style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-heading)', margin: '8px 0 4px 0' }}>{parseInline(trimmed.replace(/^###\s+/, ''))}</h3>);
+        elements.push(
+          <h3 key={`${keyPrefix}-h3-${idx}`} className="mb-1 mt-2 text-[13.5px] font-semibold text-ink-heading">
+            {parseInline(trimmed.replace(/^###\s+/, ''))}
+          </h3>
+        );
         return;
       }
 
       if (trimmed.startsWith('> ')) {
         elements.push(
-          <blockquote key={`${keyPrefix}-bq-${idx}`} style={{ borderLeft: '2px solid var(--accent-primary)', background: 'rgba(94, 106, 210, 0.08)', padding: '6px 12px', margin: '6px 0', borderRadius: '0 6px 6px 0', color: 'var(--text-normal)' }}>
+          <blockquote
+            key={`${keyPrefix}-bq-${idx}`}
+            className="my-1.5 rounded-r-md border-l-2 border-accent bg-accent-soft px-3 py-1.5 text-ink"
+          >
             {parseInline(trimmed.replace(/^>\s+/, ''))}
           </blockquote>
         );
@@ -80,7 +98,7 @@ export default function MarkdownRenderer({ content, agents = [], users = [] }) {
 
       if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
         elements.push(
-          <li key={`${keyPrefix}-li-${idx}`} style={{ marginLeft: '18px', marginTop: '2px', marginBottom: '2px', color: 'var(--text-normal)' }}>
+          <li key={`${keyPrefix}-li-${idx}`} className="my-0.5 ml-[18px] text-ink">
             {parseInline(trimmed.replace(/^[-*]\s+/, ''))}
           </li>
         );
@@ -88,9 +106,13 @@ export default function MarkdownRenderer({ content, agents = [], users = [] }) {
       }
 
       if (trimmed.length > 0) {
-        elements.push(<p key={`${keyPrefix}-p-${idx}`} style={{ margin: '3px 0', lineHeight: 1.5 }}>{parseInline(line)}</p>);
+        elements.push(
+          <p key={`${keyPrefix}-p-${idx}`} className="my-0.5 leading-normal">
+            {parseInline(line)}
+          </p>
+        );
       } else {
-        elements.push(<div key={`${keyPrefix}-br-${idx}`} style={{ height: '4px' }} />);
+        elements.push(<div key={`${keyPrefix}-br-${idx}`} className="h-1" />);
       }
     });
 
@@ -107,20 +129,20 @@ export default function MarkdownRenderer({ content, agents = [], users = [] }) {
     const bodyRows = rows.slice(2).map(r => r.split('|').map(c => c.trim()).filter(Boolean));
 
     return (
-      <div key={key} style={{ overflowX: 'auto', margin: '8px 0' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', background: 'var(--bg-darkest)', border: '1px solid var(--border-color)', borderRadius: '6px' }}>
+      <div key={key} className="my-2 overflow-x-auto">
+        <table className="w-full border-collapse rounded-md border border-line bg-white text-xs">
           <thead>
-            <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-color)' }}>
+            <tr className="border-b border-line bg-surface-muted">
               {headerCells.map((h, idx) => (
-                <th key={idx} style={{ padding: '7px 10px', textAlign: 'left', fontWeight: 600, color: 'var(--text-heading)' }}>{h}</th>
+                <th key={idx} className="px-2.5 py-1.5 text-left font-semibold text-ink-heading">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {bodyRows.map((row, rIdx) => (
-              <tr key={rIdx} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+              <tr key={rIdx} className="border-b border-line-soft">
                 {row.map((cell, cIdx) => (
-                  <td key={cIdx} style={{ padding: '6px 10px', color: 'var(--text-normal)' }}>{parseInline(cell)}</td>
+                  <td key={cIdx} className="px-2.5 py-1.5 text-ink">{parseInline(cell)}</td>
                 ))}
               </tr>
             ))}
@@ -147,11 +169,11 @@ export default function MarkdownRenderer({ content, agents = [], users = [] }) {
       const nameWithoutAt = mentionText.replace('@', '').trim();
       const matchingAgent = agents.find(a => a.name.toLowerCase() === nameWithoutAt.toLowerCase());
       const matchingUser = users.find(u => u.name.toLowerCase() === nameWithoutAt.toLowerCase());
-      const accentColor = matchingAgent ? matchingAgent.color : (matchingUser ? (matchingUser.color || '#818cf8') : '#818cf8');
+      const accentColor = matchingAgent ? matchingAgent.color : (matchingUser ? (matchingUser.color || '#2563eb') : '#2563eb');
 
       parts.push(
-        <span 
-          key={`m-${match.index}`} 
+        <span
+          key={`m-${match.index}`}
           className="mention-pill"
           style={{ background: `${accentColor}1f`, color: accentColor, borderColor: `${accentColor}40` }}
         >
@@ -173,13 +195,20 @@ export default function MarkdownRenderer({ content, agents = [], users = [] }) {
     const boldParts = str.split(/\*\*(.*?)\*\*/g);
     return boldParts.map((bPart, bIdx) => {
       if (bIdx % 2 === 1) {
-        return <strong key={`${key}-b-${bIdx}`} style={{ color: 'var(--text-heading)', fontWeight: 600 }}>{bPart}</strong>;
+        return (
+          <strong key={`${key}-b-${bIdx}`} className="font-semibold text-ink-heading">
+            {bPart}
+          </strong>
+        );
       }
       const codeParts = bPart.split(/`(.*?)`/g);
       return codeParts.map((cPart, cIdx) => {
         if (cIdx % 2 === 1) {
           return (
-            <code key={`${key}-c-${cIdx}`} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border-subtle)', color: 'var(--text-heading)', padding: '1px 5px', borderRadius: '4px', fontSize: '11.5px', fontFamily: 'var(--font-mono)' }}>
+            <code
+              key={`${key}-c-${cIdx}`}
+              className="rounded border border-line bg-slate-50 px-1.5 py-px font-mono text-[11.5px] text-ink-heading"
+            >
               {cPart}
             </code>
           );
