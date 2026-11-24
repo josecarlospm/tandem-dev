@@ -196,12 +196,18 @@ export function classifyTaskFailure(rawError = '', { timedOut = false, idleTimed
     };
   }
 
-  if (lower.includes('enoent') || lower.includes('not recognized') || lower.includes('command not found')) {
+  if (
+    lower.includes('enoent') ||
+    lower.includes('not recognized') ||
+    lower.includes('command not found') ||
+    lower.includes(': not found') ||
+    /(^|\s)not found(\s|$)/.test(lower)
+  ) {
     return {
       code: 'binary_not_found',
       label: 'Binary Missing',
       retryable: false,
-      remediation: 'Executable path could not be spawned. Rescan environment or update binary path in Integrations Hub.'
+      remediation: 'Install the CLI engine on this machine (or update the binary path in Agents Hub), then Rescan System Tools and Validate CLI.'
     };
   }
 
