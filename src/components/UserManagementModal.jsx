@@ -34,14 +34,14 @@ export default function UserManagementModal({ currentUser, users = [], onClose, 
   const getRoleBadge = (userRole) => {
     if (userRole === 'Owner') {
       return (
-        <span className="tag-badge" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.25)' }}>
+        <span className="tag-badge border-amber-200 bg-amber-50 text-amber-600">
           <Crown size={10} /> Owner
         </span>
       );
     }
     if (userRole === 'Admin') {
       return (
-        <span className="tag-badge" style={{ background: 'rgba(94, 106, 210, 0.12)', color: '#818cf8', borderColor: 'rgba(94, 106, 210, 0.28)' }}>
+        <span className="tag-badge border-accent-mid bg-accent-soft text-accent">
           <Shield size={10} /> Admin
         </span>
       );
@@ -62,68 +62,73 @@ export default function UserManagementModal({ currentUser, users = [], onClose, 
 
   return (
     <div className="task-drawer-overlay" onClick={onClose}>
-      <div 
+      <div
+        className="modal-panel w-[560px] max-w-[92vw]"
         onClick={(e) => e.stopPropagation()}
-        style={{ background: 'var(--bg-main)', border: '1px solid var(--border-color)', borderRadius: '12px', width: '560px', maxWidth: '92vw', padding: '24px', boxShadow: 'var(--shadow-lg)' }}
       >
         {/* Modal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px', paddingBottom: '14px', borderBottom: '1px solid var(--border-color)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(94, 106, 210, 0.14)', border: '1px solid rgba(94, 106, 210, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Users size={16} color="#818cf8" />
+        <div className="mb-[18px] flex items-center justify-between border-b border-line pb-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-accent-mid bg-accent-soft text-accent">
+              <Users size={16} />
             </div>
             <div>
-              <h2 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-heading)', margin: 0 }}>
+              <h2 className="m-0 text-[15px] font-semibold text-ink-heading">
                 Team & Access Control
               </h2>
-              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                <span>Signed in as <strong style={{ color: 'var(--text-normal)' }}>{currentUser?.name}</strong></span>
+              <div className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-ink-muted">
+                <span>Signed in as <strong className="text-ink">{currentUser?.name}</strong></span>
                 {getRoleBadge(currentUser?.role)}
               </div>
             </div>
           </div>
 
-          <button className="btn btn-secondary" style={{ width: '28px', height: '28px', padding: 0 }} onClick={onClose}>
+          <button className="btn btn-secondary h-7 w-7 p-0" onClick={onClose}>
             <X size={14} />
           </button>
         </div>
 
         {/* Member List */}
-        <div style={{ marginBottom: '18px', maxHeight: '260px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div className="mb-[18px] flex max-h-[260px] flex-col gap-1.5 overflow-y-auto">
           {users.map(u => {
             const isSelf = u.id === currentUser?.id;
             const deletable = canDeleteTarget(u);
 
             return (
-              <div 
+              <div
                 key={u.id}
-                style={{ background: 'var(--bg-surface)', border: isSelf ? '1px solid rgba(94, 106, 210, 0.35)' : '1px solid var(--border-color)', borderRadius: '8px', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                className={`flex items-center justify-between rounded-lg border bg-surface-muted px-3.5 py-2.5 ${
+                  isSelf ? 'border-accent-mid' : 'border-line'
+                }`}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <img src={u.avatar} alt={u.name} className="avatar-img" style={{ width: '32px', height: '32px', border: '1px solid var(--border-strong)' }} />
+                <div className="flex items-center gap-2.5">
+                  <img
+                    src={u.avatar}
+                    alt={u.name}
+                    className="avatar-img h-8 w-8 border border-line-strong"
+                  />
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-heading)' }}>
-                        {u.name} {isSelf && <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(You)</span>}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[13px] font-semibold text-ink-heading">
+                        {u.name} {isSelf && <span className="font-normal text-ink-muted">(You)</span>}
                       </span>
                       {getRoleBadge(u.role)}
                     </div>
-                    <span style={{ fontSize: '11.5px', color: 'var(--text-muted)', display: 'block', marginTop: '1px' }}>
+                    <span className="mt-px block text-[11.5px] text-ink-muted">
                       {u.title || u.role} · {u.email}
                     </span>
                   </div>
                 </div>
 
                 {deletable ? (
-                  <button 
-                    className="btn btn-danger" 
-                    style={{ height: '26px', padding: '0 8px', fontSize: '11px' }}
+                  <button
+                    className="btn btn-danger h-[26px] px-2 text-[11px]"
                     onClick={() => onDeleteUser(u.id)}
                   >
                     <Trash2 size={12} /> Remove
                   </button>
                 ) : (
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                  <span className="text-[11px] text-ink-muted">
                     {isSelf ? 'Active' : 'Protected'}
                   </span>
                 )}
@@ -136,21 +141,20 @@ export default function UserManagementModal({ currentUser, users = [], onClose, 
         {canManageUsers ? (
           <div>
             {!showAddForm ? (
-              <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setShowAddForm(true)}>
+              <button className="btn btn-primary w-full justify-center" onClick={() => setShowAddForm(true)}>
                 <Plus size={14} /> Add Team Member
               </button>
             ) : (
-              <form onSubmit={handleCreate} style={{ background: 'var(--bg-surface)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-heading)', marginBottom: '12px' }}>New Team Member</h3>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+              <form onSubmit={handleCreate} className="rounded-lg border border-line bg-surface-muted p-4">
+                <h3 className="mb-3 text-[13px] font-semibold text-ink-heading">New Team Member</h3>
+
+                <div className="mb-2.5 grid grid-cols-2 gap-2.5">
                   <div>
-                    <label style={{ fontSize: '11px', color: 'var(--text-normal)', display: 'block', marginBottom: '4px' }}>Full Name</label>
-                    <input 
-                      type="text" 
-                      className="chat-input" 
-                      style={{ height: '32px', fontSize: '12px' }}
-                      placeholder="e.g. Elena Rostova" 
+                    <label className="mb-1 block text-[11px] text-ink">Full Name</label>
+                    <input
+                      type="text"
+                      className="chat-input h-8 text-xs"
+                      placeholder="e.g. Elena Rostova"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
@@ -158,11 +162,11 @@ export default function UserManagementModal({ currentUser, users = [], onClose, 
                   </div>
 
                   <div>
-                    <label style={{ fontSize: '11px', color: 'var(--text-normal)', display: 'block', marginBottom: '4px' }}>Role</label>
-                    <select 
-                      value={role} 
+                    <label className="mb-1 block text-[11px] text-ink">Role</label>
+                    <select
+                      value={role}
                       onChange={(e) => setRole(e.target.value)}
-                      style={{ width: '100%', height: '32px', background: 'var(--bg-chat-input)', color: 'var(--text-heading)', border: '1px solid var(--border-color)', padding: '0 10px', borderRadius: '7px', fontSize: '12px' }}
+                      className="h-8 w-full rounded-lg border border-line bg-white px-2.5 text-xs text-ink-heading"
                     >
                       <option value="User">User (Chat & Tasks)</option>
                       <option value="Admin">Admin (Users & Agents)</option>
@@ -171,26 +175,24 @@ export default function UserManagementModal({ currentUser, users = [], onClose, 
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                <div className="mb-3.5 grid grid-cols-3 gap-2.5">
                   <div>
-                    <label style={{ fontSize: '11px', color: 'var(--text-normal)', display: 'block', marginBottom: '4px' }}>Email</label>
-                    <input 
-                      type="email" 
-                      className="chat-input" 
-                      style={{ height: '32px', fontSize: '12px' }}
-                      placeholder="elena@tandem.local" 
+                    <label className="mb-1 block text-[11px] text-ink">Email</label>
+                    <input
+                      type="email"
+                      className="chat-input h-8 text-xs"
+                      placeholder="elena@tandem.local"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <label style={{ fontSize: '11px', color: 'var(--text-normal)', display: 'block', marginBottom: '4px' }}>Initial Password</label>
-                    <input 
-                      type="password" 
-                      className="chat-input" 
-                      style={{ height: '32px', fontSize: '12px' }}
-                      placeholder="Set password" 
+                    <label className="mb-1 block text-[11px] text-ink">Initial Password</label>
+                    <input
+                      type="password"
+                      className="chat-input h-8 text-xs"
+                      placeholder="Set password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -198,27 +200,26 @@ export default function UserManagementModal({ currentUser, users = [], onClose, 
                   </div>
 
                   <div>
-                    <label style={{ fontSize: '11px', color: 'var(--text-normal)', display: 'block', marginBottom: '4px' }}>Title</label>
-                    <input 
-                      type="text" 
-                      className="chat-input" 
-                      style={{ height: '32px', fontSize: '12px' }}
-                      placeholder="Software Engineer" 
+                    <label className="mb-1 block text-[11px] text-ink">Title</label>
+                    <input
+                      type="text"
+                      className="chat-input h-8 text-xs"
+                      placeholder="Software Engineer"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                     />
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                  <button type="button" className="btn btn-secondary" style={{ height: '28px', fontSize: '12px' }} onClick={() => setShowAddForm(false)}>Cancel</button>
-                  <button type="submit" className="btn btn-primary" style={{ height: '28px', fontSize: '12px' }}>Create Member</button>
+                <div className="flex justify-end gap-2">
+                  <button type="button" className="btn btn-secondary h-7 text-xs" onClick={() => setShowAddForm(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-primary h-7 text-xs">Create Member</button>
                 </div>
               </form>
             )}
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '12px', padding: '6px 0' }}>
+          <div className="flex items-center justify-center gap-1.5 px-0 py-1.5 text-xs text-ink-muted">
             <Lock size={12} />
             <span>Regular users have read-only access to team directory.</span>
           </div>

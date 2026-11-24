@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
@@ -561,7 +561,7 @@ function postTaskCompletionAnnouncement(card, agent, responseText) {
     id: 'msg-announcement-' + Date.now(),
     senderId: agent.id,
     senderType: 'agent',
-    content: `ðŸŽ‰ **Task Completed:** **[${card.title}]**\n\n**Assigned Bot:** @${agent.name} (\`${agent.cliEngine}\`)\n\n**Result Summary:**\n${responseText}`,
+    content: `**Task Completed:** **[${card.title}]**\n\n**Assigned Bot:** @${agent.name} (\`${agent.cliEngine}\`)\n\n**Result Summary:**\n${responseText}`,
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     cardId: card.id
   };
@@ -829,7 +829,7 @@ async function runCLIAgent(agentId, rawPrompt, cardId, channelId, options = {}) 
         id: 'cm-auto-' + Date.now(),
         senderId: agent.id,
         senderType: 'agent',
-        text: `**Harness Run \`${runId}\` Started** Â· Engine: \`${agent.cliEngine}\` Â· Boundary: \`${worktreeInfo.mode}\` Â· Skills: **${boundSkills.length}**`,
+        text: `**Harness Run \`${runId}\` Started** · Engine: \`${agent.cliEngine}\` · Boundary: \`${worktreeInfo.mode}\` · Skills: **${boundSkills.length}**`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
     }
@@ -990,7 +990,7 @@ async function runCLIAgent(agentId, rawPrompt, cardId, channelId, options = {}) 
         id: 'cm-err-' + Date.now(),
         senderId: agent.id,
         senderType: 'agent',
-        text: `**Run \`${runId}\` Failed (${failure.label}):** Could not spawn \`${binPath}\` â€” ${err.message}\n*Remediation:* ${failure.remediation}`,
+        text: `**Run \`${runId}\` Failed (${failure.label}):** Could not spawn \`${binPath}\` — ${err.message}\n*Remediation:* ${failure.remediation}`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
       broadcast('card_updated', card);
@@ -1273,7 +1273,7 @@ wss.on('connection', (ws) => {
             });
           }
         } else {
-          // General chat thread â€” do NOT auto-create task cards or auto-trigger bots.
+          // General chat thread — do NOT auto-create task cards or auto-trigger bots.
           // Only trigger if explicitly @mentioned
           state.agents.forEach(agent => {
             if (content.toLowerCase().includes(`@${agent.name.toLowerCase()}`)) {
@@ -1422,7 +1422,7 @@ wss.on('connection', (ws) => {
             id: 'msg-sys-' + Date.now(),
             senderId: 'system',
             senderType: 'system',
-            content: `ðŸ¤– **Member Joined:** **${memberName}** was added to **#${channel.name}** by **${requesterName}**.`,
+            content: `**Member Joined:** **${memberName}** was added to **#${channel.name}** by **${requesterName}**.`,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           };
 
@@ -1518,7 +1518,7 @@ wss.on('connection', (ws) => {
           id: 'msg-sys-conv-' + Date.now(),
           senderId: 'system',
           senderType: 'system',
-          content: `ðŸ“Œ **Task Created:** Converted message/thread into Trello card **[${newCard.title}]** assigned to **@${agent ? agent.name : 'Bot'}**!`,
+          content: `**Task Created:** Converted message/thread into Trello card **[${newCard.title}]** assigned to **@${agent ? agent.name : 'Bot'}**!`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           cardId: newCard.id
         };
@@ -2180,7 +2180,7 @@ app.post('/api/auth/login', (req, res) => {
   user.status = 'online';
   broadcast('users_updated', state.users.map(sanitizeUser));
 
-  console.log(`[AUTH] Login successful: ${user.name} (${user.role}) â€” session ${token.slice(0, 8)}...`);
+  console.log(`[AUTH] Login successful: ${user.name} (${user.role}) — session ${token.slice(0, 8)}...`);
 
   res.json({
     token,
