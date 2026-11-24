@@ -94,8 +94,16 @@ export default function LoginScreen({ onLogin, errorMessage }) {
 
           {showHint && (
             <div className="login-hint-box">
-              <p className="text-[11.5px] leading-relaxed text-ink-muted">
-                On first launch, Tandem reads <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">TANDEM_OWNER_EMAIL</code> and <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">TANDEM_INITIAL_PASSWORD</code> from <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">.env</code>, or prints a one-time bootstrap password to the server console.
+              <div className="login-hint-row">
+                <span className="text-ink-muted">Owner email</span>
+                <code>dev@tandem.local</code>
+              </div>
+              <div className="login-hint-row">
+                <span className="text-ink-muted">Local password</span>
+                <code>tandem-dev</code>
+              </div>
+              <p className="login-hint-password">
+                Bootstrap uses <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">TANDEM_OWNER_EMAIL</code> / <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">TANDEM_INITIAL_PASSWORD</code> from <code className="rounded border border-line-soft bg-white px-1 font-mono text-[11px] text-ink-heading">.env</code>. If the password env is empty, the server prints a one-time password on first launch.
               </p>
             </div>
           )}
