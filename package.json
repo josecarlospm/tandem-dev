@@ -1,0 +1,33 @@
+{
+  "name": "tandem-dev",
+  "version": "0.2.0",
+  "description": "Open-source workspace where human teams and local AI coding agents work as one team.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/josecarlospm/tandem-dev.git"
+  },
+  "scripts": {
+    "dev": "concurrently -n \"SERVER,VITE\" -c \"cyan,magenta\" \"node server.js\" \"vite\"",
+    "dev:server": "node server.js",
+    "dev:client": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "lucide-react": "^0.395.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "ws": "^8.17.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "concurrently": "^8.2.2",
+    "vite": "^5.3.1"
+  }
+}
